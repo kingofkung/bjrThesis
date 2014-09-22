@@ -404,21 +404,21 @@ summary(maindf$Party)
 
 #remove all green and libertarian predicted
 maindf$Party <- factor(maindf$Party)
-levels(maindf$PartyRec) <- c(levels(maindf$PartyRec), "Democratic", "Republican", "Unaffiliated")
-maindf$PartyRec[which(maindf$PartyRec %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
-maindf$PartyRec[which(maindf$PartyRec %in% "D") ] <- "Democratic"
-maindf$PartyRec[which(maindf$PartyRec %in% "R") ] <- "Republican" 
-maindf$PartyRec <- factor(maindf$PartyRec) #Remove the odd parties levels
+levels(maindf$Party) <- c(levels(maindf$Party), "Democratic", "Republican", "Unaffiliated")
+maindf$Party[which(maindf$Party %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
+maindf$Party[which(maindf$Party %in% "D") ] <- "Democratic"
+maindf$Party[which(maindf$Party %in% "R") ] <- "Republican" 
+maindf$Party <- factor(maindf$Party) #Remove the odd parties levels
 
 
 
 #repeat for Vandat
 Vandat$Party <- factor(Vandat$Party)
-levels(Vandat$PartyRec) <- c(levels(Vandat$PartyRec), "Democratic", "Republican", "Unaffiliated")
-Vandat$PartyRec[which(Vandat$PartyRec %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
-Vandat$PartyRec[which(Vandat$PartyRec %in% "D") ] <- "Democratic"
-Vandat$PartyRec[which(Vandat$PartyRec %in% "R") ] <- "Republican" 
-Vandat$PartyRec <- factor(Vandat$PartyRec) #Remove the odd parties levels
+levels(Vandat$Party) <- c(levels(Vandat$Party), "Democratic", "Republican", "Unaffiliated")
+Vandat$Party[which(Vandat$Party %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
+Vandat$Party[which(Vandat$Party %in% "D") ] <- "Democratic"
+Vandat$Party[which(Vandat$Party %in% "R") ] <- "Republican" 
+Vandat$Party <- factor(Vandat$Party) #Remove the odd parties levels
 
 
 maindf$Sex[which(maindf$Sex == 'U')] <- NA
@@ -434,39 +434,39 @@ levels(Vandat$Sex)
 
 
  #Recode factors as numeric
-is.na( maindf$cen00_medianincome)
+# is.na( maindf$cen00_medianincome)
 
 # maindf$cen00_medianincomeRec <- lapply(maindf$cen00_medianincome, as.character)
-maindf$cen00_medianincomeRec <- gsub(',', '', maindf$cen00_medianincomeRec)
+maindf$cen00_medianincome <- gsub(',', '', maindf$cen00_medianincome)
 
-maindf$cen00_medianincomeRec <- as.numeric(maindf$cen00_medianincomeRec)
+maindf$cen00_medianincome <- as.numeric(maindf$cen00_medianincome)
 
 
 
 # maindf$cen10_densityRec <- lapply(maindf$cen10_density, as.character)
-maindf$cen10_densityRec <- gsub(',', '', maindf$cen10_densityRec)
+maindf$cen10_density <- gsub(',', '', maindf$cen10_density)
 
-maindf$cen10_densityRec <- as.numeric(maindf$cen10_densityRec)
+maindf$cen10_density <- as.numeric(maindf$cen10_density)
 
 
 summary(maindf$cons_ppi)
 
 # maindf$cons_ppiRec <- lapply(maindf$cons_ppi, as.character)
-maindf$cons_ppiRec <- gsub(",", '',maindf$cons_ppiRec)
-maindf$cons_ppiRec <- as.numeric(maindf$cons_ppiRec)
+maindf$cons_ppi <- gsub(",", '',maindf$cons_ppi)
+maindf$cons_ppi <- as.numeric(maindf$cons_ppi)
 
 
 # maindf$reg_earliest_yearRec <- lapply(maindf$reg_earliest_year, as.character)
-maindf$reg_earliest_yearRec <- gsub(",", '', maindf$reg_earliest_yearRec)
-maindf$reg_earliest_yearRec <- as.numeric(maindf$reg_earliest_yearRec)
+maindf$reg_earliest_year <- gsub(",", '', maindf$reg_earliest_year)
+maindf$reg_earliest_year <- as.numeric(maindf$reg_earliest_year)
 
 # maindf$donate_max_demRec <- lapply(maindf$donate_max_dem, as.character)
-maindf$donate_max_demRec <- gsub(",", '', maindf$donate_max_demRec)
-maindf$donate_max_demRec <- as.numeric(maindf$donate_max_demRec)
+maindf$donate_max_dem <- gsub(",", '', maindf$donate_max_dem)
+maindf$donate_max_dem <- as.numeric(maindf$donate_max_dem)
 
 
 
-na.omit(data.frame(maindf$cons_ppi, maindf$cons_ppiRec))
+# na.omit(data.frame(maindf$cons_ppi, maindf$cons_ppiRec))
 
 #
 # recode datasets information (proxy for region)
