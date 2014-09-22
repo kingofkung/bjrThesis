@@ -22,14 +22,9 @@ library(car)
 library(xlsx)
 library(gdata)
 library(rockchalk)
-# library(betareg)
 library(caret) #loads ggplot2
-# library(nnet)
-# library(e1071)
-# library(randomForest)
-
-
-#Function Section 
+library(leaps)
+library(glmnet)
 
  
  
@@ -885,9 +880,9 @@ Rprof(NULL)
 summaryRprof('bensprof.txt')
 
 
-valsToPred <- with(maindf2, list(PartyRec = levels(PartyRec), cat_age = levels(cat_age), Sex = levels(Sex)))
+# valsToPred <- with(maindf2, list(PartyRec = levels(Party), cat_age = levels(cat_age), Sex = levels(Sex)))
 
-print(newdata(bestReg, predVals = valsToPred ))
+# # print(newdata(bestReg, predVals = valsToPred ))
 
 
 # # #Creating movement score loop
