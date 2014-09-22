@@ -539,8 +539,8 @@ maindf2 <- maindf2[-tenperc$Fold06,]
 controldf2 <- maindf2[tenperc$Fold06,]
 
 
-junkermod <-  glm(sp03 ~. , family ='binomial',  data = maindf2)
-model.matrix(maindf)
+# junkermod <-  glm(sp03 ~. , family ='binomial',  data = maindf2)
+# model.matrix(maindf2)
 
 
 
@@ -726,7 +726,7 @@ if(i == 1 & NIVs == 1 ){ #On the very first pass,
 rm(rtPredRat)
 rm(contPredRat)
 
-if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
+if(metabreaker != 0){ iloopbreaker <- 0; bestIV <- NULL} #if metabreaker is still equal to its original nonzero value, break the loop.
 
 }# Inner Loop Ends
 # 
