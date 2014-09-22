@@ -484,7 +484,8 @@ Vandat[Vandat$General10 %in% c('Y','A'), 'SpecVotes'] <- 0
 Vandat$TenDummy <- 0
 Vandat[maindf2$General12 %in% c('Y','A'), 'TenDummy'] <- 1
  
-
+saveRDS(maindf,'maindf.RDS')
+readRDS('maindf.RDS')
 
 maindf2 <- maindf[which(is.na(maindf$votebuilder_identifier) == F & is.na(maindf$sp03) == F & maindf$sp03 != '' ),]
 
@@ -531,7 +532,7 @@ maindf2 <-  maindf2[, !(colnames(maindf2) %in% colstoelim)]
  # Vandat$LastN <- nchar(Vandat$combineMeta)
 
 
-
+ 
 
 # pull out a tenth of the data for control purposes
 
