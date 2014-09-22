@@ -536,7 +536,7 @@ nrow(maindf2)
 paste("'", paste(colnames(Vandat), collapse = "', '"), "'", sep = '') #OK, so check it out. These nested paste statements allow me to not only paste the colnames of Vandat without resorting to that cumbersome do.call command, but it also allows me to add on a set of quotations to the outside, making copy and pasting the ones we want removed really easy. 
 
 #get rid of categorical columns
-colstoelim <- c("project_name",'lastnameq2', 'dispositionid','datasource_name',  'agent_name', 'datelastcalled', 'firstname', 'lastname', 'lastnameq1','lastnameq2', 'address1', 'address2', 'country', 'countrycode', 'activephone', 'phonenumber1', 'phonenumber2','fips', 'fkey', 'pd01', 'pd02', 'pd03', 'pd04', 'pd05', 'pd06', 'pd07', 'pd08', 'pd09','sp02','sp02.2', 'sp02.2Rec', 'sp07', 'sp07.2Rec','sp07.2', 'sp09', 'sp01', 'cen00_medianincome', 'cen10_density', 'sp02Rec' ,"sp03Rec", "sp04Rec", "sp05Rec", "sp06Rec", "sp07Rec", "sp08Rec", 'cons_ppi', 'city', 'reg_earliest_year', 'state', 'donate_max_dem', 'mAddress', 'mCity', 'mState', 'mZip5', 'mZip4', 'vAddress', 'City', 'State', 'Zip5', 'Zip4', 'LastName', 'FirstName', 'MiddleName', 'Suffix', 'Email')
+colstoelim <- c("project_name",'lastnameq2', 'dispositionid','datasource_name',  'agent_name', 'datelastcalled', 'firstname', 'lastname', 'lastnameq1','lastnameq2', 'address1', 'address2', 'country', 'countrycode', 'activephone', 'phonenumber1', 'phonenumber2','fips', 'fkey', 'pd01', 'pd02', 'pd03', 'pd04', 'pd05', 'pd06', 'pd07', 'pd08', 'pd09','sp02','sp02.2', 'sp02.2Rec', 'sp07', 'sp07.2Rec','sp07.2', 'sp09', 'sp01',  'sp02Rec' ,"sp03Rec", "sp04Rec", "sp05Rec", "sp06Rec", "sp07Rec", "sp08Rec", 'cons_ppi', 'city', 'reg_earliest_year', 'state', 'donate_max_dem', 'mAddress', 'mCity', 'mState', 'mZip5', 'mZip4', 'vAddress', 'City', 'State', 'Zip5', 'Zip4', 'LastName', 'FirstName', 'MiddleName', 'Suffix', 'Email')
 
 novarcols <- ('voted_10p')
 
@@ -666,7 +666,7 @@ bestVarResSt <- NULL
 # priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'cen00_medianincomeRec', "CountyName")
 # priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'CountyName','cen10_densityRec','cen00_medianincomeRec')
 
- priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'CountyName', 'SpecVotes', 'TenDummy', 'cen10_densityRec', 'cen00_medianincomeRec') #Mark's IV's
+ priorIVs <- c('cat_age', 'Sex', 'Party', 'CountyName', 'SpecVotes', 'TenDummy', 'cen10_density', 'cen00_medianincome') #Mark's IV's
 
 
   # priorIVs <- NULL #For when we want to do something without prior IVs
@@ -694,7 +694,7 @@ iloopbreaker <- 1 #iloopbreaker begins as 1
 ivformed <- paste(ivstouse, collapse = ' + ')
 formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
 
-
+ivstouse %in% colnames(maindf2)
 traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
 
 # KFold cross-validation method of iv selection
