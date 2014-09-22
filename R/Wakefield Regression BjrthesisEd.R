@@ -469,50 +469,50 @@ maindf$donate_max_dem <- as.numeric(maindf$donate_max_dem)
 # na.omit(data.frame(maindf$cons_ppi, maindf$cons_ppiRec))
 
 #
-# recode datasets information (proxy for region)
-maindf$dsnRec <- maindf$datasource_name #Shortened, since this is pretty long
+# # recode datasets information (proxy for region)
+# maindf$dsnRec <- maindf$datasource_name #Shortened, since this is pretty long
 
 
-levels(maindf$dsnRec)
+# levels(maindf$dsnRec)
 
 
-Douglevels <- levels(maindf$dsnRec)[ grep('Douglas', levels(maindf$dsnRec))]
-Leavenlevels <- levels(maindf$dsnRec)[ grep('Leavenworth', levels(maindf$dsnRec))]
-Shawnlevels <- levels(maindf$dsnRec)[ grep('Shawnee', levels(maindf$dsnRec))]
-SElevels <- levels(maindf$dsnRec)[ grep('Southeast', levels(maindf$dsnRec))]
-SElevels <-c(SElevels, levels(maindf$dsnRec)[ grep('SESampleCellExport', levels(maindf$dsnRec))])
+# Douglevels <- levels(maindf$dsnRec)[ grep('Douglas', levels(maindf$dsnRec))]
+# Leavenlevels <- levels(maindf$dsnRec)[ grep('Leavenworth', levels(maindf$dsnRec))]
+# Shawnlevels <- levels(maindf$dsnRec)[ grep('Shawnee', levels(maindf$dsnRec))]
+# SElevels <- levels(maindf$dsnRec)[ grep('Southeast', levels(maindf$dsnRec))]
+# SElevels <-c(SElevels, levels(maindf$dsnRec)[ grep('SESampleCellExport', levels(maindf$dsnRec))])
 
-NElevels <- levels(maindf$dsnRec)[ grep('Northeast', levels(maindf$dsnRec))]
-NElevels <-c(NElevels, levels(maindf$dsnRec)[ grep('NESampleCellExport', levels(maindf$dsnRec))])
-
-
-levels(maindf$dsnRec) <- c(levels(maindf$dsnRec), "Northeast", "Southeast", "Douglas", "Leavenworth", "Shawnee") #add simplified data to the region
+# NElevels <- levels(maindf$dsnRec)[ grep('Northeast', levels(maindf$dsnRec))]
+# NElevels <-c(NElevels, levels(maindf$dsnRec)[ grep('NESampleCellExport', levels(maindf$dsnRec))])
 
 
-#recode. this just seemed easiest, since the recodes were 1-1
-maindf$dsnRec[ which(maindf$dsnRec %in% Douglevels)] <- "Douglas"
-maindf$dsnRec[ which(maindf$dsnRec %in% Leavenlevels)] <- "Leavenworth"
-maindf$dsnRec[ which(maindf$dsnRec %in% Shawnlevels)] <- "Shawnee"
-maindf$dsnRec[ which(maindf$dsnRec %in% SElevels)] <- "Southeast"
-maindf$dsnRec[ which(maindf$dsnRec %in% NElevels)] <- "Northeast"
+# levels(maindf$dsnRec) <- c(levels(maindf$dsnRec), "Northeast", "Southeast", "Douglas", "Leavenworth", "Shawnee") #add simplified data to the region
 
-maindf$dsnRec <- factor(maindf$dsnRec) #and remove old levels
- levels(maindf$dsnRec)
 
-maindf$dougDummy <-0
-maindf$dougDummy[which(maindf$dsnRec == 'Douglas')] <- 1
+# #recode. this just seemed easiest, since the recodes were 1-1
+# maindf$dsnRec[ which(maindf$dsnRec %in% Douglevels)] <- "Douglas"
+# maindf$dsnRec[ which(maindf$dsnRec %in% Leavenlevels)] <- "Leavenworth"
+# maindf$dsnRec[ which(maindf$dsnRec %in% Shawnlevels)] <- "Shawnee"
+# maindf$dsnRec[ which(maindf$dsnRec %in% SElevels)] <- "Southeast"
+# maindf$dsnRec[ which(maindf$dsnRec %in% NElevels)] <- "Northeast"
 
-maindf$leavenDummy <-0
-maindf$leavenDummy[which(maindf$dsnRec == 'Leavenworth')] <- 1
+# maindf$dsnRec <- factor(maindf$dsnRec) #and remove old levels
+ # levels(maindf$dsnRec)
 
-maindf$shawnDummy <- 0
-maindf$shawnDummy[which(maindf$dsnRec == 'Shawnee')] <- 1
+# maindf$dougDummy <-0
+# maindf$dougDummy[which(maindf$dsnRec == 'Douglas')] <- 1
 
-maindf$neDummy <- 0
-maindf$neDummy[which(maindf$dsnRec == 'Northeast')] <- 1
+# maindf$leavenDummy <-0
+# maindf$leavenDummy[which(maindf$dsnRec == 'Leavenworth')] <- 1
 
-maindf$seDummy <- 0
-maindf$seDummy[which(maindf$dsnRec == 'Southeast')] <- 1
+# maindf$shawnDummy <- 0
+# maindf$shawnDummy[which(maindf$dsnRec == 'Shawnee')] <- 1
+
+# maindf$neDummy <- 0
+# maindf$neDummy[which(maindf$dsnRec == 'Northeast')] <- 1
+
+# maindf$seDummy <- 0
+# maindf$seDummy[which(maindf$dsnRec == 'Southeast')] <- 1
 
 # #separate maindf into three dataframes: 
 # # maindf which contains dv and Iv information
@@ -520,14 +520,15 @@ maindf$seDummy[which(maindf$dsnRec == 'Southeast')] <- 1
 # # and controldf, which lets us find out how well our model is performing
 # maindf$rownum <- as.integer(rownames(maindf))
 # maindfrows <- match( dvdf$sp01,  maindf$VANID) #get the rows that match vanids
-as.character(levels(maindf$sp03))
+
+
 
 maindf2 <- maindf[which(is.na(maindf$votebuilder_identifier) == F & is.na(maindf$sp03) == F & maindf$sp03 != '' ),]
 
 maindf2$sp03
-#Way to check % of records that are NA's
-length(na.omit(maindf2[, 'cen10_densityRec']))/length(maindf2[, 'cen10_densityRec'])
-complete.cases(maindf2[,'cen00_medianincomeRec'])
+# #Way to check % of records that are NA's
+# length(na.omit(maindf2[, 'cen10_densityRec']))/length(maindf2[, 'cen10_densityRec'])
+# complete.cases(maindf2[,'cen00_medianincomeRec'])
 
 
 nrow(maindf2) 
@@ -535,93 +536,13 @@ nrow(maindf2)
 paste("'", paste(colnames(Vandat), collapse = "', '"), "'", sep = '') #OK, so check it out. These nested paste statements allow me to not only paste the colnames of Vandat without resorting to that cumbersome do.call command, but it also allows me to add on a set of quotations to the outside, making copy and pasting the ones we want removed really easy. 
 
 #get rid of categorical columns
-colstoelim <- c("project_name",'lastnameq2', 'dispositionid','datasource_name',  'agent_name', 'datelastcalled', 'firstname', 'lastname', 'lastnameq1','lastnameq2', 'address1', 'address2', 'country', 'countrycode', 'activephone', 'phonenumber1', 'phonenumber2','fips', 'fkey', 'pd01', 'pd02', 'pd03', 'pd04', 'pd05', 'pd06', 'pd07', 'pd08', 'pd09','sp02','sp02.2', 'sp02.2Rec', 'sp07', 'sp07.2Rec','sp07.2', 'sp09', 'sp03', 'sp01','sp04','sp05','sp06','sp08', 'cen00_medianincome', 'cen10_density', 'sp02Rec' ,"sp03Rec", "sp04Rec", "sp05Rec", "sp06Rec", "sp07Rec", "sp08Rec", 'cons_ppi', 'city', 'reg_earliest_year', 'state', 'donate_max_dem', 'mAddress', 'mCity', 'mState', 'mZip5', 'mZip4', 'vAddress', 'City', 'State', 'Zip5', 'Zip4', 'LastName', 'FirstName', 'MiddleName', 'Suffix', 'Email')
+colstoelim <- c("project_name",'lastnameq2', 'dispositionid','datasource_name',  'agent_name', 'datelastcalled', 'firstname', 'lastname', 'lastnameq1','lastnameq2', 'address1', 'address2', 'country', 'countrycode', 'activephone', 'phonenumber1', 'phonenumber2','fips', 'fkey', 'pd01', 'pd02', 'pd03', 'pd04', 'pd05', 'pd06', 'pd07', 'pd08', 'pd09','sp02','sp02.2', 'sp02.2Rec', 'sp07', 'sp07.2Rec','sp07.2', 'sp09', 'sp01', 'cen00_medianincome', 'cen10_density', 'sp02Rec' ,"sp03Rec", "sp04Rec", "sp05Rec", "sp06Rec", "sp07Rec", "sp08Rec", 'cons_ppi', 'city', 'reg_earliest_year', 'state', 'donate_max_dem', 'mAddress', 'mCity', 'mState', 'mZip5', 'mZip4', 'vAddress', 'City', 'State', 'Zip5', 'Zip4', 'LastName', 'FirstName', 'MiddleName', 'Suffix', 'Email')
 
 novarcols <- ('voted_10p')
 
 colstoelim <- c(colstoelim, novarcols)
 
-for(i in 1:length(colstoelim)) maindf2[,colstoelim[i]] <- NULL
-#Create correlation matrix, remove anything that correlates too highly with prior IVs
-
-#There's a problem though. Correlation matrices require numeric predictors, and maindf2 is partially factor, mostly integer values
-
-#we need to create dummy vars for party, cat_age, and Sex
-
-# # maindf2$SexF <- NA
-# maindf2[which(maindf2[,'Sex'] == 'F'), 'SexF' ] <- 1
-# maindf2[which(maindf2[,'Sex'] == 'M'), 'SexF' ] <- 0
-
-
-# levels( maindf2$cat_age) #"18-30" "31-45" "46-64" "65+
-# maindf2$cat_age18_30 <- NA
-# maindf2[which(maindf2[,'cat_age'] == '18-30'), 'cat_age18_30' ] <- 1
-# maindf2[which(maindf2[,'cat_age'] != '18-30' & is.na(maindf2[,'cat_age']) == F), 'cat_age18_30' ] <- 0
-# # maindf2[,c('cat_age', 'cat_age18_30')]
-
-# maindf2$cat_age31_45 <- NA
-# maindf2[which(maindf2[,'cat_age'] == '31-45'), 'cat_age31_45' ] <- 1
-# maindf2[which(maindf2[,'cat_age'] != '31-45' & is.na(maindf2[,'cat_age']) == F), 'cat_age31_45' ] <- 0
-# # maindf2[,c('cat_age', 'cat_age31_45')]
-
-
-# maindf2$cat_age46_64 <- NA
-# maindf2[which(maindf2[,'cat_age'] == '46-64'), 'cat_age46_64' ] <- 1
-# maindf2[which(maindf2[,'cat_age'] != '46-64' & is.na(maindf2[,'cat_age']) == F), 'cat_age46_64' ] <- 0
-# # maindf2[,c('cat_age', 'cat_age46-64')]
-
-# maindf2$cat_age65up <- NA
-# maindf2[which(maindf2[,'cat_age'] == '65+'), 'cat_age65up' ] <- 1
-# maindf2[which(maindf2[,'cat_age'] != '65+' & is.na(maindf2[,'cat_age']) == F), 'cat_age65up' ] <- 0
-# # maindf2[,c('cat_age', 'cat_age65up')]
-
-# # levels(maindf2$PartyRec)
-# maindf2$PartyRecR <- NA
-# maindf2[which(maindf2[,'PartyRec'] == 'Republican'), 'PartyRecR' ] <- 1
-# maindf2[which(maindf2[,'PartyRec'] != 'Republican' & is.na(maindf2[, 'PartyRec']) == F), 'PartyRecR' ] <- 0
-# maindf2[, c('PartyRec', 'PartyRecR')]
-
-# maindf2$PartyRecD <- NA
-# maindf2[which(maindf2[,'PartyRec'] == 'Democratic'), 'PartyRecD' ] <- 1
-# maindf2[which(maindf2[,'PartyRec'] != 'Democratic' & is.na(maindf2[, 'PartyRec']) == F), 'PartyRecD' ] <- 0
-# maindf2[, c('PartyRec', 'PartyRecD')]
-
-# maindf2$PartyRecU <- NA
-# maindf2[which(maindf2[,'PartyRec'] == 'Unaffiliated'), 'PartyRecU' ] <- 1
-# maindf2[which(maindf2[,'PartyRec'] != 'Unaffiliated' & is.na(maindf2[, 'PartyRec']) == F), 'PartyRecU' ] <- 0
-# maindf2[, c('PartyRec', 'PartyRecU')]
-
-
-# droppr <-  c('PartyRec','Party', 'cat_age', 'cat_ageDe','Sex')
-# savr <- maindf2[,droppr]
-# maindf2 <-  maindf2[,!names(maindf2) %in% droppr] 
-# summary(maindf2)
-
-
-
-# maindfcorgettr <- data.frame(as.numeric(maindf2[,1]))
-# rownames(maindfcorgettr) <- rownames(maindf2)
-
-# for(i in 1:ncol(maindf2)){
-	
-	# dfrowtonum <- data.frame(as.numeric(maindf2[,i]))
-	# rownames(dfrowtonum) <- rownames(maindf2)
-	# colnames(dfrowtonum) <- colnames(maindf2)[i]
-	# maindfcorgettr <-  cbind(maindfcorgettr, dfrowtonum)
-	# rm(dfrowtonum)	
-	# }  
-
-# maindfcorgettr <- maindfcorgettr[,-1]
-
-# which( cor(maindfcorgettr, use = 'pairwise.complete.obs') >.75, arr.ind = T)[, 'col' ]
-# which( cor(maindfcorgettr, use = 'pairwise.complete.obs') >.75, arr.ind = T)[, 'row' ]
-
-
-
-# head(, n = 30L)
-
-# maindf2 <- cbind(maindf2, savr)
-
+maindf2 <-  maindf2[, !(colnames(maindf2) %in% colstoelim)]
 
 # create lastN scores
 
@@ -631,6 +552,11 @@ for(i in 1:length(colstoelim)) maindf2[,colstoelim[i]] <- NULL
  #create two dummy variables based on the following
   # Those who voted in 2008, 2012, but not 2010,
  # Those who voted in 2010
+ 
+ maindf2$General08 <- factor(maindf2$General08)
+ maindf2$General10 <- factor(maindf2$General10)
+ maindf2$General12 <- factor(maindf2$General12)
+ 
  
 maindf2$SpecVotes <- 0
 maindf2[ which(maindf2$General08 %in% c('Y','A') & maindf2$General12 %in% c('Y','A')), 'SpecVotes'] <- 1
@@ -669,7 +595,7 @@ Vandat[maindf2$General12 %in% c('Y','A'), 'TenDummy'] <- 1
 
 # pull out a tenth of the data for control purposes
 
-tenperc <-  createFolds(complete.cases(maindf2[,'sp03SuppRec']), k = 10)
+tenperc <-  createFolds(complete.cases(maindf2[,'sp03']), k = 10)
 
 maindf2 <- maindf2[-tenperc$Fold06,]
 controldf2 <- maindf2[tenperc$Fold06,]
@@ -688,10 +614,10 @@ MAXIVs <- 10 # Number of Go rounds for IV selection
 # nFold <- 2 #number of folds to use for kfold cross validation method of IV selection
 
 
-deevlist <- c('sp03SuppRec', 'sp04SuppRec','sp05SuppRec','sp06SuppRec','sp08SuppRec') 
+deevlist <- c('sp03', 'sp04','sp05','sp06','sp08') 
  # deevlist <- 'sp03SuppRec' #for when we want to test a feature, but are overwhelmed by the number of regressions
  #Select things that we don't want in our IV list below
- dvcols <- c("sp03Rec2", "sp04Rec2", "sp04avgmove",  "sp05Rec2", "sp05avgmove", "sp06Rec2", "sp06avgmove",  "sp08Rec2", "sp08avgmove", 'sp03SuppRec', 'sp04SuppRec','sp05SuppRec','sp06SuppRec','sp08SuppRec',  'deevdiv', 'deevfac') #anything that deals with a DV
+ dvcols <- c('sp03', 'sp04','sp05','sp06','sp08',"sp03Rec2", "sp04Rec2", "sp04avgmove",  "sp05Rec2", "sp05avgmove", "sp06Rec2", "sp06avgmove",  "sp08Rec2", "sp08avgmove", 'sp03SuppRec', 'sp04SuppRec','sp05SuppRec','sp06SuppRec','sp08SuppRec',  'deevdiv', 'deevfac') #anything that deals with a DV
  rescols <- c('Preds_for_sp03Rec2', 'Recoded_sp03Rec2','Preds_for_sp04Rec2', 'Recoded_sp04Rec2', 'Preds_for_sp05Rec2', 'Recoded_sp05Rec2', 'Preds_for_sp06Rec2', 'Recoded_sp06Rec2', 'Preds_for_sp08Rec2', 'Recoded_sp08Rec2') #Any thing that resembles a dv or is a stored dv. 
 extraagevars <-  colnames(maindf2)[grep("age_", colnames(maindf2))]
 gendervars <- colnames(maindf2)[grep("male", colnames(maindf2))]
