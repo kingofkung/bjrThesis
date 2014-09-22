@@ -39,7 +39,7 @@ library(caret) #loads ggplot2
 
 # maindf <-  read.csv("FivePrimaryVoterInfo.csv") #Appears to be the main dataset, includes the DV
 
-mdf1 <- read.csv("Survey Round 1.csv")
+mdf1 <- read.csv("Survey Round 1.csv", stringsAsFactors = F)
 data.frame(colnames(mdf1)) #Note: mdf question columns start at sp02 and end at sp08. The two that vary are sp02 and sp07
 #To deal with this, we separate out the questions that are different between surveys, and add a couple of new columns on for new questions
 mdf1qs <- mdf1[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
@@ -51,7 +51,7 @@ colnames(mdf1qs)[3] <- 'lastnameq1'
 length(rownames(mdf1qs))
 head(mdf1qs)
 
-mdf2 <- read.csv("Survey Round 2.csv") #Then, we place the new questions in the new columns, and clear the former sp02 and sp07 columns. 
+mdf2 <- read.csv("Survey Round 2.csv", stringsAsFactors = F) #Then, we place the new questions in the new columns, and clear the former sp02 and sp07 columns. 
 mdf2qs <- mdf2[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
 str(mdf2qs)
 mdf2qs$sp02.2 <- mdf2qs$sp02
@@ -79,17 +79,17 @@ head(Vandensinc)
 str(Vandensinc)
 
 # Vandensinc$votebuilder_identifier2 <- lapply(Vandensinc$votebuilder_identifier,FUN = as.character)
-Vandensinc$votebuilder_identifier2 <- gsub(',', '', Vandensinc$votebuilder_identifier2)
-Vandensinc$votebuilder_identifier2 <- as.numeric(Vandensinc$votebuilder_identifier2)
+Vandensinc$votebuilder_identifier <- gsub(',', '', Vandensinc$votebuilder_identifier)
+Vandensinc$votebuilder_identifier <- as.numeric(Vandensinc$votebuilder_identifier)
 
 # Vandensinc$census_2000_medianincome2 <- lapply(Vandensinc$census_2000_medianincome,FUN = as.character)
-Vandensinc$census_2000_medianincome2 <- gsub(',', '', Vandensinc$census_2000_medianincome2)
-Vandensinc$census_2000_medianincome2 <- as.numeric(Vandensinc$census_2000_medianincome2)
+Vandensinc$census_2000_medianincome <- gsub(',', '', Vandensinc$census_2000_medianincome)
+Vandensinc$census_2000_medianincome <- as.numeric(Vandensinc$census_2000_medianincome)
 
 
 # Vandensinc$density_land_sq_km2 <- lapply(Vandensinc$density_land_sq_km,FUN = as.character)
-Vandensinc$density_land_sq_km2 <- gsub(',', '', Vandensinc$density_land_sq_km2)
-Vandensinc$density_land_sq_km2 <- as.numeric(Vandensinc$density_land_sq_km2)
+Vandensinc$density_land_sq_km <- gsub(',', '', Vandensinc$density_land_sq_km)
+Vandensinc$density_land_sq_km <- as.numeric(Vandensinc$density_land_sq_km)
 
 
 
@@ -106,15 +106,15 @@ maindf$namecheck <- otherdat[otherdatarows, 'votebuilder_identifier']
 # data.frame(maindf[which(maindf$sp03 != ""), ])[1521,]
 
 #Match IV data to Vandat
-VandatMatcherrows <- match(Vandat$VANID, Vandensinc$votebuilder_identifier2)
+VandatMatcherrows <- match(Vandat$VANID, Vandensinc$votebuilder_identifier)
 
 Vandat <- cbind(Vandat, Vandensinc[VandatMatcherrows,])
-head(Vandat[, c('VANID','votebuilder_identifier2') ])
+head(Vandat[, c('VANID','votebuilder_identifier') ])
 
 #rename relevant columns to correct names 'cen10_densityRec', 'cen00_medianincomeRec'
-colnames(Vandat)[ which(colnames( Vandat) == 'census_2000_medianincome2')] <- 'cen00_medianincomeRec'
+colnames(Vandat)[ which(colnames( Vandat) == 'census_2000_medianincome')] <- 'cen00_medianincome'
 
-colnames(Vandat)[ which(colnames( Vandat) == 'density_land_sq_km2')] <- 'cen10_densityRec'
+colnames(Vandat)[ which(colnames( Vandat) == 'density_land_sq_km')] <- 'cen10_density'
 
 
 #general guess: Are you a heavy 
@@ -123,20 +123,20 @@ colnames(Vandat)[ which(colnames( Vandat) == 'density_land_sq_km2')] <- 'cen10_d
 #Get Jake ID Numbers of everyone we want 'full' IV data for.
 
 
-as.character(levels(mdf1qs$sp02))
+# # # as.character(levels(mdf1qs$sp02))
 
-# print(mdf1qs$sp02)
+# # print(mdf1qs$sp02)
 
-topullVANS <- c(maindf[  which(maindf$sp02 != "" & maindf$sp02 != " "),'voterid'], maindf[  which(maindf$sp02.2 != "" & maindf$sp02.2 != " "),'voterid'])
+# # topullVANS <- c(maindf[  which(maindf$sp02 != "" & maindf$sp02 != " "),'voterid'], maindf[  which(maindf$sp02.2 != "" & maindf$sp02.2 != " "),'voterid'])
 
-topullVANS == 1544185
-length(topullVANS)
+# topullVANS == 1544185
+# length(topullVANS)
 
-colnames(maindf)[33]
+# colnames(maindf)[33]
 
-# maindf[which( maindf$voterid %in% topullVANS ), c('lastname', 'lastnameq1', 'sp02', 'sp02.2', 'sp03')]
+# # maindf[which( maindf$voterid %in% topullVANS ), c('lastname', 'lastnameq1', 'sp02', 'sp02.2', 'sp03')]
 
-# write.csv(topullVANS, file = 'topull completed2.csv')
+# # write.csv(topullVANS, file = 'topull completed2.csv')
 
  
 
@@ -195,44 +195,44 @@ maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("2 -No- there are no problems wit
 
 
 #Recode sp03
-specificrecode <- function(varRec){
-#This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
+# specificrecode <- function(varRec){
+# #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
 
-levels(varRec) <- c(levels(varRec), "Supports Wakefield",  "Undecided","Supports Jenkins") #add the new values as categories
+# levels(varRec) <- c(levels(varRec), "Supports Wakefield",  "Undecided","Supports Jenkins") #add the new values as categories
 
-#Recode level
-varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
-varRec[which(varRec %in% c("1 - Supports Lynn", "2", "3", "4"))] <- "Supports Jenkins"
-varRec[which(varRec %in% "5")] <- "Undecided"
-varRec[which(varRec %in% c("6", "7","8","9", "10 - Supports Margie"))] <- "Supports Wakefield"
+# #Recode level
+# varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
+# varRec[which(varRec %in% c("1 - Supports Lynn", "2", "3", "4"))] <- "Supports Jenkins"
+# varRec[which(varRec %in% "5")] <- "Undecided"
+# varRec[which(varRec %in% c("6", "7","8","9", "10 - Supports Margie"))] <- "Supports Wakefield"
 
-rts <- factor(varRec)
+# rts <- factor(varRec)
 
-return(rts)
+# return(rts)
 
-}
+# }
 
-specificrecode2 <- function(varRec){
-#This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
+# specificrecode2 <- function(varRec){
+# #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
 
-levels(varRec) <- c(levels(varRec),'10', '1','0') #add the new values as categories
+# levels(varRec) <- c(levels(varRec),'10', '1','0') #add the new values as categories
 
-#Recode level
-varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
-varRec[which(varRec %in% c("1 - Supports Lynn"))] <- "1"
+# #Recode level
+# varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
+# varRec[which(varRec %in% c("1 - Supports Lynn"))] <- "1"
 
-varRec[which(varRec %in% c("10 - Supports Margie"))] <- "10"
+# varRec[which(varRec %in% c("10 - Supports Margie"))] <- "10"
 
 
 
-# varRec[which(varRec %in% c('1','2','3','4','5'))] <- '0'
-# varRec[which(varRec %in% c('6','7','8','9','10'))] <- '1'
+# # varRec[which(varRec %in% c('1','2','3','4','5'))] <- '0'
+# # varRec[which(varRec %in% c('6','7','8','9','10'))] <- '1'
 
- rts <- as.numeric(as.character((varRec)))
+ # rts <- as.numeric(as.character((varRec)))
 
-return(rts)
+# return(rts)
 
-}
+# }
 
 
 
@@ -265,14 +265,14 @@ zeroLvls <- c("1 - Supports Lynn", "2", "3", "4", "5",  "6")
 oneLvls <- c('7', '8', '9', "10 - Supports Margie")
 naLvls <- c("", " 0 - Decline to answer ", " 0 - Decline to answer  " )
 
-maindf$sp03Rec <- specificrecode(maindf$sp03)
+# maindf$sp03Rec <- specificrecode(maindf$sp03)
 # maindf$sp03Rec[!is.na(maindf$sp03Rec)]
 
-maindf$sp03Rec2 <- specificrecode2(maindf$sp03)
+# maindf$sp03Rec2 <- specificrecode2(maindf$sp03)
 
 
 levels(maindf$sp03)
-maindf$sp03SuppRec <- binRec(maindf$sp03, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
+maindf$sp03 <- binRec(maindf$sp03, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
 
 
  # data.frame(maindf$sp03, maindf$sp03SuppRec)[!is.na(maindf$sp03SuppRec),]
@@ -280,52 +280,52 @@ maindf$sp03SuppRec <- binRec(maindf$sp03, lvlsToZero = zeroLvls, lvlsToOne = one
 
 
 
-maindf$sp04Rec <- specificrecode(maindf$sp04)
+# maindf$sp04Rec <- specificrecode(maindf$sp04)
 # maindf$sp04Rec[which(maindf$sp04Rec %in% " 0 - Decline to answer  ")] <- NA #As I mentioned earlier, the specific recode only recodes very specific variables, and since the 0 level changes slightly between  these factors, I have to go through and recode this as a separate command. .
 # maindf$sp04Rec <- factor(maindf$sp04Rec)
 # print(maindf$sp04Rec[!is.na(maindf$sp04Rec)]) #I always forget how to make sure that we're not looking at NA responses, but this does the trick.
 
-maindf$sp04Rec2 <- specificrecode2(maindf$sp04)
-maindf$sp04avgmove <- maindf$sp04Rec2 - maindf$sp03Rec2
+# maindf$sp04Rec2 <- specificrecode2(maindf$sp04)
+# maindf$sp04avgmove <- maindf$sp04Rec2 - maindf$sp03Rec2
 # maindf$sp04instmove <- maindf$sp04avgmove #in this case, average movement == instantaneous movement 
 levels(maindf$sp04)
-maindf$sp04SuppRec <- binRec(maindf$sp04, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
+maindf$sp04 <- binRec(maindf$sp04, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
 
 
 # data.frame(maindf$sp04, maindf$sp04SuppRec)[is.na(maindf$sp04SuppRec),]
 
 
-maindf$sp05Rec <- specificrecode(maindf$sp05)
-levels(maindf$sp05Rec)
+# maindf$sp05Rec <- specificrecode(maindf$sp05)
+# levels(maindf$sp05Rec)
 # maindf$sp05Rec[which(maindf$sp05Rec %in% " 0 - Decline to answer  " )] <- NA
 # maindf$sp05Rec <- factor(maindf$sp05Rec)
 # print( maindf$sp05Rec[!is.na(maindf$sp05Rec)])
 
-maindf$sp05SuppRec <- binRec(maindf$sp05, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
+maindf$sp05 <- binRec(maindf$sp05, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
 
 
-maindf$sp05Rec2 <- specificrecode2(maindf$sp05)
-maindf$sp05avgmove <- maindf$sp05Rec2 - maindf$sp03Rec2
-# maindf$sp05instmove <- maindf$sp05Rec2 - maindf$sp04Rec2  #in this case, average movement == instantaneous movement 
+# maindf$sp05Rec2 <- specificrecode2(maindf$sp05)
+# maindf$sp05avgmove <- maindf$sp05Rec2 - maindf$sp03Rec2
+# # maindf$sp05instmove <- maindf$sp05Rec2 - maindf$sp04Rec2  #in this case, average movement == instantaneous movement 
 
 
 
-maindf$sp06Rec <- specificrecode(maindf$sp06)
-levels(maindf$sp06Rec)
+# # maindf$sp06Rec <- specificrecode(maindf$sp06)
+# levels(maindf$sp06Rec)
 
-# maindf$sp06Rec[which(maindf$sp06Rec %in% " 0 - Decline to answer  " )] <- NA
+# # maindf$sp06Rec[which(maindf$sp06Rec %in% " 0 - Decline to answer  " )] <- NA
 
-# maindf$sp06Rec <- factor(maindf$sp06Rec)
-maindf$sp06Rec[!is.na(maindf$sp06Rec)]
+# # maindf$sp06Rec <- factor(maindf$sp06Rec)
+# maindf$sp06Rec[!is.na(maindf$sp06Rec)]
 
-maindf$sp06Rec2 <- specificrecode2(maindf$sp06)
-# print(maindf[!is.na(maindf$sp06Rec2),c('sp03Rec2','sp04Rec2','sp05Rec2','sp06Rec2')])
+# maindf$sp06Rec2 <- specificrecode2(maindf$sp06)
+# # print(maindf[!is.na(maindf$sp06Rec2),c('sp03Rec2','sp04Rec2','sp05Rec2','sp06Rec2')])
 
-maindf$sp06Rec2 <- specificrecode2(maindf$sp06)
-maindf$sp06avgmove <- maindf$sp06Rec2 - maindf$sp03Rec2
+# maindf$sp06Rec2 <- specificrecode2(maindf$sp06)
+# maindf$sp06avgmove <- maindf$sp06Rec2 - maindf$sp03Rec2
 # maindf$sp06instmove <- maindf$sp06Rec2 - maindf$sp05Rec2  #in this case, average movement == instantaneous movement 
 
-maindf$sp06SuppRec <- binRec(maindf$sp06, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
+maindf$sp06 <- binRec(maindf$sp06, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
 
 
 
@@ -367,14 +367,14 @@ maindf$sp07.2Rec <- factor(maindf$sp07.2Rec)
 
 
 
-maindf$sp08Rec <- specificrecode(maindf$sp08)
-levels(maindf$sp08Rec)
+# maindf$sp08Rec <- specificrecode(maindf$sp08)
+# levels(maindf$sp08Rec)
 
-maindf$sp08Rec2 <- specificrecode2(maindf$sp08)
+# maindf$sp08Rec2 <- specificrecode2(maindf$sp08)
 
-maindf$sp08avgmove <- maindf$sp08Rec2 - maindf$sp03Rec2
+# maindf$sp08avgmove <- maindf$sp08Rec2 - maindf$sp03Rec2
 
-maindf$sp08SuppRec <- binRec(maindf$sp08, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
+maindf$sp08 <- binRec(maindf$sp08, lvlsToZero = zeroLvls, lvlsToOne = oneLvls, lvlsToNa = naLvls)
 
 
 
@@ -393,17 +393,17 @@ Agebreaks <- c(17, 30, 45, 64, 200)
 maindf$cat_age <- cut(maindf$Age, breaks = Agebreaks , labels = Agelabels)
 Vandat$cat_age <- cut(Vandat$Age, breaks = Agebreaks , labels = Agelabels)
 
-#Use one of these to create a more Demarcated (hence the De) set of agebreaks 
-AgebreaksDe <- c(17, 25,30, 35,40, 45, 50, 55,60, 65, 200)
-AgelabelsDe <- c('18-25', '26-30', '31-35','36-40','41-45', '46-50', '51-55', '56-60', '61-64', '65+')
+# #Use one of these to create a more Demarcated (hence the De) set of agebreaks 
+# AgebreaksDe <- c(17, 25,30, 35,40, 45, 50, 55,60, 65, 200)
+# AgelabelsDe <- c('18-25', '26-30', '31-35','36-40','41-45', '46-50', '51-55', '56-60', '61-64', '65+')
 
-maindf$cat_ageDe <- cut(maindf$Age, breaks = AgebreaksDe, labels = AgelabelsDe)
+# maindf$cat_ageDe <- cut(maindf$Age, breaks = AgebreaksDe, labels = AgelabelsDe)
 
 
 summary(maindf$Party)
 
 #remove all green and libertarian predicted
-maindf$PartyRec <- maindf$Party
+maindf$Party <- factor(maindf$Party)
 levels(maindf$PartyRec) <- c(levels(maindf$PartyRec), "Democratic", "Republican", "Unaffiliated")
 maindf$PartyRec[which(maindf$PartyRec %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
 maindf$PartyRec[which(maindf$PartyRec %in% "D") ] <- "Democratic"
@@ -413,7 +413,7 @@ maindf$PartyRec <- factor(maindf$PartyRec) #Remove the odd parties levels
 
 
 #repeat for Vandat
-Vandat$PartyRec <- Vandat$Party
+Vandat$Party <- factor(Vandat$Party)
 levels(Vandat$PartyRec) <- c(levels(Vandat$PartyRec), "Democratic", "Republican", "Unaffiliated")
 Vandat$PartyRec[which(Vandat$PartyRec %in% c("L", "U") )] <- "Unaffiliated" #get rid of the odd parties and unknowns
 Vandat$PartyRec[which(Vandat$PartyRec %in% "D") ] <- "Democratic"
@@ -436,14 +436,14 @@ levels(Vandat$Sex)
  #Recode factors as numeric
 is.na( maindf$cen00_medianincome)
 
-maindf$cen00_medianincomeRec <- lapply(maindf$cen00_medianincome, as.character)
+# maindf$cen00_medianincomeRec <- lapply(maindf$cen00_medianincome, as.character)
 maindf$cen00_medianincomeRec <- gsub(',', '', maindf$cen00_medianincomeRec)
 
 maindf$cen00_medianincomeRec <- as.numeric(maindf$cen00_medianincomeRec)
 
 
 
-maindf$cen10_densityRec <- lapply(maindf$cen10_density, as.character)
+# maindf$cen10_densityRec <- lapply(maindf$cen10_density, as.character)
 maindf$cen10_densityRec <- gsub(',', '', maindf$cen10_densityRec)
 
 maindf$cen10_densityRec <- as.numeric(maindf$cen10_densityRec)
@@ -451,16 +451,16 @@ maindf$cen10_densityRec <- as.numeric(maindf$cen10_densityRec)
 
 summary(maindf$cons_ppi)
 
-maindf$cons_ppiRec <- lapply(maindf$cons_ppi, as.character)
+# maindf$cons_ppiRec <- lapply(maindf$cons_ppi, as.character)
 maindf$cons_ppiRec <- gsub(",", '',maindf$cons_ppiRec)
 maindf$cons_ppiRec <- as.numeric(maindf$cons_ppiRec)
 
 
-maindf$reg_earliest_yearRec <- lapply(maindf$reg_earliest_year, as.character)
+# maindf$reg_earliest_yearRec <- lapply(maindf$reg_earliest_year, as.character)
 maindf$reg_earliest_yearRec <- gsub(",", '', maindf$reg_earliest_yearRec)
 maindf$reg_earliest_yearRec <- as.numeric(maindf$reg_earliest_yearRec)
 
-maindf$donate_max_demRec <- lapply(maindf$donate_max_dem, as.character)
+# maindf$donate_max_demRec <- lapply(maindf$donate_max_dem, as.character)
 maindf$donate_max_demRec <- gsub(",", '', maindf$donate_max_demRec)
 maindf$donate_max_demRec <- as.numeric(maindf$donate_max_demRec)
 
