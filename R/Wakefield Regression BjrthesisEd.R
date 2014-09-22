@@ -461,6 +461,31 @@ maindf$donate_max_dem <- as.numeric(maindf$donate_max_dem)
 
 
 
+ #create two dummy variables based on the following
+  # Those who voted in 2008, 2012, but not 2010,
+ # Those who voted in 2010
+ 
+ maindf2$General08 <- factor(maindf2$General08)
+ maindf2$General10 <- factor(maindf2$General10)
+ maindf2$General12 <- factor(maindf2$General12)
+ 
+ 
+maindf$SpecVotes <- 0
+maindf[ which(maindf$General08 %in% c('Y','A') & maindf$General12 %in% c('Y','A')), 'SpecVotes'] <- 1
+maindf[maindf$General10 %in% c('Y','A'), 'SpecVotes'] <- 0
+
+maindf$TenDummy <- 0
+maindf[maindf$General12 %in% c('Y','A'), 'TenDummy'] <- 1
+ 
+Vandat$SpecVotes <- 0
+Vandat[ which(Vandat$General08 %in% c('Y','A') & Vandat$General12 %in% c('Y','A')), 'SpecVotes'] <- 1
+Vandat[Vandat$General10 %in% c('Y','A'), 'SpecVotes'] <- 0
+
+Vandat$TenDummy <- 0
+Vandat[maindf2$General12 %in% c('Y','A'), 'TenDummy'] <- 1
+ 
+
+
 maindf2 <- maindf[which(is.na(maindf$votebuilder_identifier) == F & is.na(maindf$sp03) == F & maindf$sp03 != '' ),]
 
 # maindf2$sp03
@@ -486,29 +511,6 @@ maindf2 <-  maindf2[, !(colnames(maindf2) %in% colstoelim)]
 
  # Collect fields to use for scoring
  metaFields <- c('General08','General12', 'General10')
- 
- #create two dummy variables based on the following
-  # Those who voted in 2008, 2012, but not 2010,
- # Those who voted in 2010
- 
- maindf2$General08 <- factor(maindf2$General08)
- maindf2$General10 <- factor(maindf2$General10)
- maindf2$General12 <- factor(maindf2$General12)
- 
- 
-maindf2$SpecVotes <- 0
-maindf2[ which(maindf2$General08 %in% c('Y','A') & maindf2$General12 %in% c('Y','A')), 'SpecVotes'] <- 1
-maindf2[maindf2$General10 %in% c('Y','A'), 'SpecVotes'] <- 0
-
-maindf2$TenDummy <- 0
-maindf2[maindf2$General12 %in% c('Y','A'), 'TenDummy'] <- 1
- 
-Vandat$SpecVotes <- 0
-Vandat[ which(Vandat$General08 %in% c('Y','A') & Vandat$General12 %in% c('Y','A')), 'SpecVotes'] <- 1
-Vandat[Vandat$General10 %in% c('Y','A'), 'SpecVotes'] <- 0
-
-Vandat$TenDummy <- 0
-Vandat[maindf2$General12 %in% c('Y','A'), 'TenDummy'] <- 1
  
  
  
