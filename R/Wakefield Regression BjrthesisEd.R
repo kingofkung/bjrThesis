@@ -44,11 +44,7 @@ maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
 maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, is.character)==T], as.factor)
 head(maindf2)
 
-colnames(maindf2[,10:11])
-str(maindf2, list.len = ncol(maindf2))
-mickey <-  mice(maindf2[1:180])
-summary(mickey)
- 
+
 
 # pull out a tenth of the data for control purposes
 set.seed(12345)
@@ -89,7 +85,21 @@ ActivateVars <- c('prospectid', 'PersonID', 'zipcode')
  VANVars <-  colnames(Vandat)
 clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
 
-colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
+colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
+
+
+
+str(maindf2, list.len = ncol(maindf2))
+lastn <- 225
+print(colnames(maindf2)[lastn])
+mickey <-  mice(
+maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
+summary(mickey)
+ 
+
+
+
+
 
 #End IV Removal
 
