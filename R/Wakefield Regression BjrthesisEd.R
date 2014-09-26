@@ -28,13 +28,26 @@ library(rockchalk)
 library(caret) #loads ggplot2
 library(leaps)
 library(glmnet)
-
+library(mice)
  
  
 maindf2 <-  readRDS('maindf2.rds')
+str(maindf2)
+
+# app
 
 
+varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'CountyName', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck')
 
+maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
+
+maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, is.character)==T], as.factor)
+head(maindf2)
+
+colnames(maindf2[,10:11])
+str(maindf2, list.len = ncol(maindf2))
+mickey <-  mice(maindf2[1:180])
+summary(mickey)
  
 
 # pull out a tenth of the data for control purposes
