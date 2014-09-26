@@ -95,7 +95,7 @@ print(colnames(maindf2)[lastn])
 mickey <-  mice(
 maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
 summary(mickey)
- 
+ saveRDS(object = mickey, file = 'imputation.rds')
 
 
 
