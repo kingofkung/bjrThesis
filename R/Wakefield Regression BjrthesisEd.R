@@ -89,17 +89,40 @@ colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','att
 
 
 
-str(maindf2, list.len = ncol(maindf2))
-lastn <- 225
-print(colnames(maindf2)[lastn])
-mickey <-  mice(
-maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
-summary(mickey)
- saveRDS(object = mickey, file = 'imputation.rds')
+# str(maindf2, list.len = ncol(maindf2))
+# lastn <- 225
+# print(colnames(maindf2)[lastn])
+# mickey <-  mice(
+# maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
+# summary(mickey)
+ # saveRDS(object = mickey, file = 'imputation.rds')
+mickey <- readRDS(file = 'imputation.rds')
+#Dataframe appears to have been saved in mickey$pad$data
+# But isn't imputed...
+# We can get that using complete(mickey)
+# str(mickey)
+ # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
+
+xdat <- model.matrix(sp03 ~., data = complete(mickey))
+# colnames(xdat) 
+# length( xdat)
+str(xdat) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
+dim(xdat)
+head(xdat)
+
+#Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
+ydata <- complete(mickey)$sp03[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
 
 
+testglmnet <-  glmnet( 
+x = xdat,
+y = ydata,
+family = 'binomial'
+)
 
+teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
+model.matrix(y~., data = teedat)
 
 #End IV Removal
 
