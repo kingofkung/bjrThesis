@@ -103,26 +103,45 @@ mickey <- readRDS(file = 'imputation.rds')
 # str(mickey)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
-xdat <- model.matrix(sp03 ~., data = complete(mickey))
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - clarity_party - others_num_dem -others_num_rep -reg_party_dem -reg_earliest_month - gender_female - gender_male - others_num_male, data = complete(mickey))
 # colnames(xdat) 
 # length( xdat)
-str(xdat) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
-dim(xdat)
-head(xdat)
+str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
+dim(xdata)
+head(xdata)
 
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
-ydata <- complete(mickey)$sp03[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
+ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
+
+grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
+
 
 
 testglmnet <-  glmnet( 
-x = xdat,
+x = xdata,
 y = ydata,
-family = 'binomial'
-)
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = grid
+) 
+cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1)
+plot(cvtest)
 
-teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
+bestlasso<-  glmnet( 
+x = xdata,
+y = ydata,
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = cvtest$lambda.min
+) 
+ coef(bestlasso)
+library(glmnetcr) 
 
-model.matrix(y~., data = teedat)
+data.frame( raw.coefs = , odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+
+# teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
+
+# model.matrix(y~., data = teedat)
 
 #End IV Removal
 
