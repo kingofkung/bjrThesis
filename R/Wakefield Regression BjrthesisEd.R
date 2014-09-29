@@ -88,15 +88,22 @@ clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
 colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
 
 
+#Imputation section
+impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
+colnames(impdata)
 
-# str(maindf2, list.len = ncol(maindf2))
-# lastn <- 225
-# print(colnames(maindf2)[lastn])
-# mickey <-  mice(
-# maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
-# summary(mickey)
- # saveRDS(object = mickey, file = 'imputation.rds')
-mickey <- readRDS(file = 'imputation.rds')
+colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
+
+
+morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips
+
+impdata[, c('Sex', 'Age', 'cons_dbi_travel_vacation_3plusplanetrips')]
+
+ saveRDS(object = morty, file = 'imputationtest.rds')
+ 
+ 
+ifilename <-  'imputation.rds'
+mickey <- readRDS(file = ifilename)
 #Dataframe appears to have been saved in mickey$pad$data
 # But isn't imputed...
 # We can get that using complete(mickey)
@@ -136,8 +143,8 @@ lambda = cvtest$lambda.min
 ) 
  coef(bestlasso)
 library(glmnetcr) 
-
-data.frame( raw.coefs = , odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+print(ifilename)
+data.frame( odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
