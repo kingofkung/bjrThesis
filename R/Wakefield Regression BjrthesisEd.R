@@ -135,6 +135,7 @@ impcor <-  cor(model.matrix(sp03~., impdata))
 sort(impcor[,'cons_dbi_travel_vacation_3plusplanetrips'])  #When you look at it like this, it's very clear that cons_dbi_travel_vacation_air is so close as to completely track cons_dbi_travel_vacation_3plusplanetrips
 
 data.frame('ThreePlus' = impdata$cons_dbi_travel_vacation_3plusplanetrips, 'airtravel' = impdata$cons_dbi_travel_vacation_air, 'diff' = impdata$cons_dbi_travel_vacation_3plusplanetrips- impdata$cons_dbi_travel_vacation_air )
+impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plusplanetrips, as its meaning is much clearer.
 
  # morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips.
  # We have learned why. It turns out that mice ignores any column it believes is similar enough to others
