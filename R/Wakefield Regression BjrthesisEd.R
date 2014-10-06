@@ -89,8 +89,8 @@ colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','att
 
 
 #Imputation section
- impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% c('Age','Sex', 'Party')])] #Put data to impute in a variable
-# colnames(impdata)
+ impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
+ colnames(impdata)
 apply( apply(impdata, 2, is.na), 2, sum)
 # colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
 
@@ -98,8 +98,6 @@ str(maindf2, list.len = ncol(maindf2))
 # lastn <- 225
 # print(colnames(maindf2)[lastn])
 
-impdf <- maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])]
-head(impdf)
 
 # library(parallel)
 # clus <-  makeCluster(6, type = "PSOCK")
@@ -111,25 +109,47 @@ head(impdf)
 	# rm(mickey)
 # }
  
- 
+#Recode age and sex in our data to use the complete columns.
 colnames(impdata)
-impdata$myAge <- impdata$Age
-impdata$age_years[606] <- NA
+impdata$Age <- impdata$age_years
+impdata$age_years <- NULL
 
- morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips.
+#Get gender_male into the same format as sex, and replace the old version
+data.frame( impdata$Sex, impdata$gender_male)
+impdata$gender_male <- factor(impdata$gender_male)
+levels(impdata$gender_male) <- c( levels(impdata$gender_male), 'M', 'F')
+impdata$gender_male[ impdata$gender_male == 1] <- 'M'
+impdata$gender_male[ impdata$gender_male == 0] <- 'F'
+impdata$gender_male <- factor(impdata$gender_male)
+
+
+which(impdata$Sex != impdata$gender_male) #All are now the same w/recoding, except for NA's
+impdata$Sex <- impdata$gender_male
+impdata$gender_female <- NULL
+impdata$gender_male <- NULL
+
+# impdata$age_years[606] <- NA
+
+#While we can deal with sex and age, this 3+ planetrips needs to be considered separately
+impcor <-  cor(model.matrix(sp03~., impdata))
+sort(impcor[,'cons_dbi_travel_vacation_3plusplanetrips'])  #When you look at it like this, it's very clear that cons_dbi_travel_vacation_air is so close as to completely track cons_dbi_travel_vacation_3plusplanetrips
+
+data.frame('ThreePlus' = impdata$cons_dbi_travel_vacation_3plusplanetrips, 'airtravel' = impdata$cons_dbi_travel_vacation_air, 'diff' = impdata$cons_dbi_travel_vacation_3plusplanetrips- impdata$cons_dbi_travel_vacation_air )
+
+ # morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips.
  # We have learned why. It turns out that mice ignores any column it believes is similar enough to others
-plot(Age ~ age_years, data = impdata)
+# plot(Age ~ age_years, data = impdata)
 
-fit <-  with(data = morty, exp = lm(sp03 ~ Sex))
-fitpool <- pool(fit)
+# fit <-  with(data = morty, exp = lm(sp03 ~ Sex))
+# fitpool <- pool(fit)
 
-View(complete(morty, action = 1)[606:607,])
+# View(complete(morty, action = 1)[606:607,])
 # impdata[, c('Sex', 'Age', 'cons_dbi_travel_vacation_3plusplanetrips')]
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
  
-ifilename <-  'imputation.rds' #Name of file where imputation is stored:
+ifilename <-  'imputation2.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
 str(mickey)
@@ -149,17 +169,16 @@ head(xdata)
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
 ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
 
-grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
+# grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
+# testglmnet <-  glmnet( 
+# x = xdata,
+# y = ydata,
+# family = 'binomial',
+# alpha = 1, #Perform the lasso!
+# lambda = grid
+# ) 
 
 
-
-testglmnet <-  glmnet( 
-x = xdata,
-y = ydata,
-family = 'binomial',
-alpha = 1, #Perform the lasso!
-lambda = grid
-) 
 cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1) #Find best value of penalty for our imputed data
 plot(cvtest) #plot the value, because it looks cool. 
 
