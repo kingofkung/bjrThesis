@@ -154,7 +154,6 @@ grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
 
 testglmnet <-  glmnet( 
 x = xdata,
-<<<<<<< HEAD
 y = ydata,
 family = 'binomial',
 alpha = 1, #Perform the lasso!
@@ -178,7 +177,6 @@ data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = e
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
-=======
 y = ydata,
 family = 'binomial',
 alpha = 1, #Perform the lasso!
@@ -202,7 +200,6 @@ data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = e
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
->>>>>>> FETCH_HEAD
 # model.matrix(y~., data = teedat)
 
 #End IV Removal
@@ -249,7 +246,6 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 	# print( paste( 'NIVs =', NIVs))
 	print(paste('dv =',deev))
 	# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
-<<<<<<< HEAD
 
 
 	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
@@ -261,7 +257,6 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 
 		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
 
-=======
 
 
 	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
@@ -273,7 +268,6 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 
 		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
 
->>>>>>> FETCH_HEAD
 		# ivstouse <- priorIVs
 		
 		# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
