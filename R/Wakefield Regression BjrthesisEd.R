@@ -127,6 +127,13 @@ which(impdata$Sex != impdata$gender_male) #All are now the same w/recoding, exce
 impdata$Sex <- impdata$gender_male
 impdata$gender_female <- NULL
 impdata$gender_male <- NULL
+impdata$others_num_male <- NULL
+
+#get rid of redundant party variables
+impdata$clarity_party <- NULL 
+impdata$others_num_dem <- NULL
+impdata$others_num_rep <- NULL
+impdata$reg_party_dem <- NULL
 
 # impdata$age_years[606] <- NA
 
@@ -160,7 +167,7 @@ str(mickey)
 # str(mickey)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
-xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - clarity_party - others_num_dem -others_num_rep -reg_party_dem -reg_earliest_month - gender_female - gender_male - others_num_male - cons_childcnt, data = complete(mickey))
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt, data = complete(mickey))
 # colnames(xdat) 
 # length( xdat)
 str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
