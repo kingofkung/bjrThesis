@@ -95,6 +95,7 @@ apply( apply(impdata, 2, is.na), 2, sum)
 # colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 str(maindf2, list.len = ncol(maindf2))
 # lastn <- 225
 # print(colnames(maindf2)[lastn])
@@ -115,6 +116,8 @@ for(u in 1:5){
  
 # mickey <- readRDS(file = 'imputation.rds')
 =======
+=======
+>>>>>>> FETCH_HEAD
 colnames(impdata)
 impdata$myAge <- impdata$Age
 impdata$age_years[606] <- NA
@@ -134,6 +137,9 @@ ifilename <-  'imputation.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
 str(mickey)
+<<<<<<< HEAD
+>>>>>>> FETCH_HEAD
+=======
 >>>>>>> FETCH_HEAD
 #Dataframe appears to have been saved in mickey$pad$data
 # But isn't imputed...
@@ -157,6 +163,7 @@ grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
 
 testglmnet <-  glmnet( 
 x = xdata,
+<<<<<<< HEAD
 y = ydata,
 family = 'binomial',
 alpha = 1, #Perform the lasso!
@@ -180,6 +187,31 @@ data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = e
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
+=======
+y = ydata,
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = grid
+) 
+cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1) #Find best value of penalty for our imputed data
+plot(cvtest) #plot the value, because it looks cool. 
+
+bestlasso<-  glmnet( 
+x = xdata,
+y = ydata,
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = cvtest$lambda.min
+) 
+
+coef(bestlasso)
+library(glmnetcr) 
+print(ifilename)
+data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+
+# teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
+
+>>>>>>> FETCH_HEAD
 # model.matrix(y~., data = teedat)
 
 #End IV Removal
@@ -226,6 +258,7 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 	# print( paste( 'NIVs =', NIVs))
 	print(paste('dv =',deev))
 	# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
+<<<<<<< HEAD
 
 
 	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
@@ -237,6 +270,19 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 
 		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
 
+=======
+
+
+	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
+
+	for(i in 1:initlooplength) {#Inner Loop Begins
+		# for(i in 1:length) {#Inner Loop Begins
+
+		iloopbreaker <- 1 #iloopbreaker begins as 1
+
+		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
+
+>>>>>>> FETCH_HEAD
 		# ivstouse <- priorIVs
 		
 		# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
