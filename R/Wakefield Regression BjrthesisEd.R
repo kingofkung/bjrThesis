@@ -112,11 +112,11 @@ head(impdf)
 # }
  
  
-# mickey <- readRDS(file = 'imputation.rds')
 colnames(impdata)
 impdata$myAge <- impdata$Age
 impdata$age_years[606] <- NA
-morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips
+
+# morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips
 plot(Age ~ age_years, data = impdata)
 
 fit <-  with(data = morty, exp = lm(sp03 ~ Sex))
@@ -177,11 +177,11 @@ data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = e
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
-y = ydata,
-family = 'binomial',
-alpha = 1, #Perform the lasso!
-lambda = grid
-) 
+# y = ydata,
+# family = 'binomial',
+# alpha = 1, #Perform the lasso!
+# lambda = grid
+# ) 
 cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1) #Find best value of penalty for our imputed data
 plot(cvtest) #plot the value, because it looks cool. 
 
@@ -261,7 +261,7 @@ for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 
 	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
 
-	for(i in 1:initlooplength) {#Inner Loop Begins
+	for(i in 1:initlooplength) { #Inner Loop Begins
 		# for(i in 1:length) {#Inner Loop Begins
 
 		iloopbreaker <- 1 #iloopbreaker begins as 1
