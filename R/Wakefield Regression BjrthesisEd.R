@@ -242,40 +242,30 @@ bestVarResSt <- NULL
   # priorIVs <- NULL #For when we want to do something without prior IVs
 
 for(NIVs in 1:MAXIVs){ #Outer Loop Begins
-	metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
-	# print( paste( 'NIVs =', NIVs))
-	print(paste('dv =',deev))
-	# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
+metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
+# print( paste( 'NIVs =', NIVs))
+print(paste('dv =',deev))
+# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
 
 
-	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
+# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
 
-	for(i in 1:initlooplength) {#Inner Loop Begins
-		# for(i in 1:length) {#Inner Loop Begins
+for(i in 1:initlooplength) {#Inner Loop Begins
+# for(i in 1:length) {#Inner Loop Begins
 
-		iloopbreaker <- 1 #iloopbreaker begins as 1
+iloopbreaker <- 1 #iloopbreaker begins as 1
 
-		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
+ ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
+
+# ivstouse <- priorIVs
+
+# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
+# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
+ivformed <- paste(ivstouse, collapse = ' + ')
+formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
 
 
-
-	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
-
-	for(i in 1:initlooplength) { #Inner Loop Begins
-		# for(i in 1:length) {#Inner Loop Begins
-
-		iloopbreaker <- 1 #iloopbreaker begins as 1
-
-		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
-
-		# ivstouse <- priorIVs
-		
-		# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
-		# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
-		ivformed <- paste(ivstouse, collapse = ' + ')
-		formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
-		ivstouse %in% colnames(maindf2)
-		traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
+traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
 
 # KFold cross-validation method of iv selection
 # trainerFolds <- createFolds(traindf2[, 'deevdiv'], k = nFold, list = T)
@@ -356,7 +346,6 @@ if(i == 1 & NIVs == 1 ){ #On the very first pass,
 		bestRtPredRat <- contPredRat # Put the current right prediction ratio as the best one, 
 		bestIV <- colnames(maindf2)[colnumstouse[i]] #and save the bestIV for storage in priorIVs
 		print(paste('Best Ratio of prediction rates =',round( bestRtPredRat,6)))
-		print(paste('Num of obs used =', nrow(traindf2)))
 		# print(paste('Control Prediction rates =',round( contPredRat,4)))
 		metabreaker <- 0 #make the metabreaker variable = 0
 		# print(paste('bestVarStDev =', round(sqrt(bestVarResid), 6)))
@@ -367,7 +356,7 @@ if(i == 1 & NIVs == 1 ){ #On the very first pass,
 rm(rtPredRat)
 rm(contPredRat)
 
-if(metabreaker != 0){ iloopbreaker <- 0; bestIV <- NULL} #if metabreaker is still equal to its original nonzero value, break the loop.
+if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
 
 }# Inner Loop Ends
 # 
@@ -460,6 +449,7 @@ colnames(controldf2)[colnames(controldf2) == 'contpreds'] <- predtitler
 
 rm( deev, bestVarResSt, colnumstouse, bestRtPredRat)
 } # End DV Loop
+
 
 Rprof(NULL)
 
