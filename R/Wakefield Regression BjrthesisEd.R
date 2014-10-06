@@ -94,8 +94,6 @@ colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','att
 apply( apply(impdata, 2, is.na), 2, sum)
 # colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 str(maindf2, list.len = ncol(maindf2))
 # lastn <- 225
 # print(colnames(maindf2)[lastn])
@@ -106,18 +104,15 @@ head(impdf)
 # library(parallel)
 # clus <-  makeCluster(6, type = "PSOCK")
 # getOption('mc.cores', 2L)
-for(u in 1:5){
-	mickey <-  mice(impdf)
-	summary(mickey)
-	saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
-	rm(mickey)
-}
+# for(u in 1:5){
+	# mickey <-  mice(impdf)
+	# summary(mickey)
+	# saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
+	# rm(mickey)
+# }
  
  
 # mickey <- readRDS(file = 'imputation.rds')
-=======
-=======
->>>>>>> FETCH_HEAD
 colnames(impdata)
 impdata$myAge <- impdata$Age
 impdata$age_years[606] <- NA
@@ -137,10 +132,6 @@ ifilename <-  'imputation.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
 str(mickey)
-<<<<<<< HEAD
->>>>>>> FETCH_HEAD
-=======
->>>>>>> FETCH_HEAD
 #Dataframe appears to have been saved in mickey$pad$data
 # But isn't imputed...
 # We can get that using complete(mickey)
