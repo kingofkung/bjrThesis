@@ -1,7 +1,7 @@
 # Wakefield Modeling Project Master's Thesis Edition:
 # A Ben Rogers Joint
 # Started 4/9/2014
-# Last Edited 9/15/2014
+# Last Edited 9/28/2014
  
 
 rm(list = ls())
@@ -37,7 +37,7 @@ str(maindf2)
 # app
 
 
-varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'CountyName', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck')
+varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck')
 
 maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
 
@@ -88,48 +88,106 @@ clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
 colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
 
 
+#Imputation section
+ impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% c('Age','Sex', 'Party')])] #Put data to impute in a variable
+# colnames(impdata)
+apply( apply(impdata, 2, is.na), 2, sum)
+# colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
 
-# str(maindf2, list.len = ncol(maindf2))
+<<<<<<< HEAD
+str(maindf2, list.len = ncol(maindf2))
 # lastn <- 225
 # print(colnames(maindf2)[lastn])
-# mickey <-  mice(
-# maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])])
-# summary(mickey)
- # saveRDS(object = mickey, file = 'imputation.rds')
-mickey <- readRDS(file = 'imputation.rds')
+
+impdf <- maindf2[,c(deevlist, colnames(maindf2)[colnames(maindf2) %in% redundant], colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse])]
+head(impdf)
+
+# library(parallel)
+# clus <-  makeCluster(6, type = "PSOCK")
+# getOption('mc.cores', 2L)
+for(u in 1:5){
+	mickey <-  mice(impdf)
+	summary(mickey)
+	saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
+	rm(mickey)
+}
+ 
+ 
+# mickey <- readRDS(file = 'imputation.rds')
+=======
+colnames(impdata)
+impdata$myAge <- impdata$Age
+impdata$age_years[606] <- NA
+morty <-  mice(impdata, m = 2, maxit = 5) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips
+plot(Age ~ age_years, data = impdata)
+
+fit <-  with(data = morty, exp = lm(sp03 ~ Sex))
+fitpool <- pool(fit)
+
+View(complete(morty, action = 1)[606:607,])
+# impdata[, c('Sex', 'Age', 'cons_dbi_travel_vacation_3plusplanetrips')]
+
+# saveRDS(object = morty, file = 'imputationtest.rds')
+ 
+ 
+ifilename <-  'imputation.rds' #Name of file where imputation is stored:
+mickey <- readRDS(file = ifilename)
+
+str(mickey)
+>>>>>>> FETCH_HEAD
 #Dataframe appears to have been saved in mickey$pad$data
 # But isn't imputed...
 # We can get that using complete(mickey)
 # str(mickey)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
-xdat <- model.matrix(sp03 ~., data = complete(mickey))
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - clarity_party - others_num_dem -others_num_rep -reg_party_dem -reg_earliest_month - gender_female - gender_male - others_num_male - cons_childcnt, data = complete(mickey))
 # colnames(xdat) 
 # length( xdat)
-str(xdat) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
-dim(xdat)
-head(xdat)
+str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
+dim(xdata)
+head(xdata)
 
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
-ydata <- complete(mickey)$sp03[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
+ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
+
+grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
+
 
 
 testglmnet <-  glmnet( 
-x = xdat,
+x = xdata,
 y = ydata,
-family = 'binomial'
-)
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = grid
+) 
+cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1) #Find best value of penalty for our imputed data
+plot(cvtest) #plot the value, because it looks cool. 
 
-teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
+bestlasso<-  glmnet( 
+x = xdata,
+y = ydata,
+family = 'binomial',
+alpha = 1, #Perform the lasso!
+lambda = cvtest$lambda.min
+) 
 
-model.matrix(y~., data = teedat)
+coef(bestlasso)
+library(glmnetcr) 
+print(ifilename)
+data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+
+# teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
+
+# model.matrix(y~., data = teedat)
 
 #End IV Removal
 
 # maindf2[,rescols] <- NULL #make sure the recursive elements can't harm reruns by nullifying them pre-loop. 
  
 # age, gender party registration, county, and income, if we have it on everyone. 
-
+colnames(maindf2)
 Rprof('bensprof.txt')
 for(L in 1:length(deevlist)) { #begin DV loop
 deev <- deevlist[L] 
@@ -164,30 +222,29 @@ bestVarResSt <- NULL
   # priorIVs <- NULL #For when we want to do something without prior IVs
 
 for(NIVs in 1:MAXIVs){ #Outer Loop Begins
-metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
-# print( paste( 'NIVs =', NIVs))
-print(paste('dv =',deev))
-# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
+	metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
+	# print( paste( 'NIVs =', NIVs))
+	print(paste('dv =',deev))
+	# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
 
 
-# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
+	# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
 
-for(i in 1:initlooplength) {#Inner Loop Begins
-# for(i in 1:length) {#Inner Loop Begins
+	for(i in 1:initlooplength) {#Inner Loop Begins
+		# for(i in 1:length) {#Inner Loop Begins
 
-iloopbreaker <- 1 #iloopbreaker begins as 1
+		iloopbreaker <- 1 #iloopbreaker begins as 1
 
- ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
+		ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
 
-# ivstouse <- priorIVs
-
-# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
-# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
-ivformed <- paste(ivstouse, collapse = ' + ')
-formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
-
-ivstouse %in% colnames(maindf2)
-traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
+		# ivstouse <- priorIVs
+		
+		# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
+		# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
+		ivformed <- paste(ivstouse, collapse = ' + ')
+		formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
+		ivstouse %in% colnames(maindf2)
+		traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
 
 # KFold cross-validation method of iv selection
 # trainerFolds <- createFolds(traindf2[, 'deevdiv'], k = nFold, list = T)
