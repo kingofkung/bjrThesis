@@ -1,7 +1,7 @@
 # Wakefield Modeling Project Master's Thesis Edition:
 # A Ben Rogers Joint
 # Started 4/9/2014
-# Last Edited 9/28/2014
+# Last Edited 10/06/2014
  
 
 rm(list = ls())
@@ -102,12 +102,6 @@ str(maindf2, list.len = ncol(maindf2))
 # library(parallel)
 # clus <-  makeCluster(6, type = "PSOCK")
 # getOption('mc.cores', 2L)
-# for(u in 1:5){
-	# mickey <-  mice(impdf)
-	# summary(mickey)
-	# saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
-	# rm(mickey)
-# }
  
 #Recode age and sex in our data to use the complete columns.
 colnames(impdata)
@@ -156,7 +150,13 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
- 
+ for(u in 1:5){
+	mickey <-  mice(impdf)
+	summary(mickey)
+	saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
+	rm(mickey)
+}
+
 ifilename <-  'imputation2.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
