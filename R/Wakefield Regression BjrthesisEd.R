@@ -151,7 +151,7 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
  for(u in 1:5){
-	mickey <-  mice(impdf)
+	mickey <-  mice(impdata)
 	summary(mickey)
 	saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
 	rm(mickey)
