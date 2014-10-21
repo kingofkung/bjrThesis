@@ -150,6 +150,7 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
+<<<<<<< Updated upstream
  for(u in 1:5){
 	mickey <-  mice(impdata)
 	summary(mickey)
@@ -158,6 +159,10 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 }
 
 ifilename <-  'imputation2.rds' #Name of file where imputation is stored:
+=======
+ 
+ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+>>>>>>> Stashed changes
 mickey <- readRDS(file = ifilename)
 
 str(mickey)
@@ -167,7 +172,8 @@ str(mickey)
 # str(mickey)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
-xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt, data = complete(mickey))
+# mousesample <- sample(1:nrow(complete(mickey)), 9 * nrow(complete(mickey))/10)
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt- others_num_female, data = complete(mickey)[,])
 # colnames(xdat) 
 # length( xdat)
 str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
@@ -175,8 +181,8 @@ dim(xdata)
 head(xdata)
 
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
-ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
-
+# ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
+ydata <- complete(mickey)[,'sp08']
 # grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
 # testglmnet <-  glmnet( 
 # x = xdata,
@@ -224,7 +230,24 @@ lambda = cvtest$lambda.min
 coef(bestlasso)
 library(glmnetcr) 
 print(ifilename)
-data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+
+mickey.test <- complete(mickey)[-mousesample,]
+# mickey.test$sp08.2 <- mickey.test$sp08
+# mickey.test$sp08 <- NULL
+
+# newxval <- data.matrix(mickey.test)[, which(colnames(complete(mickey)) != 'sp08')]
+newxval <- data.matrix(mickey.test)
+
+# W/Dr. Johnson
+blpreds <-  predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response' )
+#Craft PCP Function
+
+cbind(blpreds, ydata)
+ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
+prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
+
+
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
