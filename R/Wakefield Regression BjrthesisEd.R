@@ -1,7 +1,7 @@
 # Wakefield Modeling Project Master's Thesis Edition:
 # A Ben Rogers Joint
 # Started 4/9/2014
-# Last Edited 10/06/2014
+# Last Edited 9/28/2014
  
 
 rm(list = ls())
@@ -102,6 +102,12 @@ str(maindf2, list.len = ncol(maindf2))
 # library(parallel)
 # clus <-  makeCluster(6, type = "PSOCK")
 # getOption('mc.cores', 2L)
+# for(u in 1:5){
+	# mickey <-  mice(impdf)
+	# summary(mickey)
+	# saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
+	# rm(mickey)
+# }
  
 #Recode age and sex in our data to use the complete columns.
 colnames(impdata)
@@ -150,19 +156,8 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
-<<<<<<< Updated upstream
- for(u in 1:5){
-	mickey <-  mice(impdata)
-	summary(mickey)
-	saveRDS(object = mickey, file = paste('imputation', u ,'.rds', sep = '' ))
-	rm(mickey)
-}
-
-ifilename <-  'imputation2.rds' #Name of file where imputation is stored:
-=======
  
 ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
->>>>>>> Stashed changes
 mickey <- readRDS(file = ifilename)
 
 str(mickey)
@@ -259,6 +254,7 @@ prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
  
 # age, gender party registration, county, and income, if we have it on everyone. 
 colnames(maindf2)
+
 Rprof('bensprof.txt')
 for(L in 1:length(deevlist)) { #begin DV loop
 deev <- deevlist[L] 
