@@ -34,6 +34,10 @@ library(mice)
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
+ifilename2 <-  'imputation4.rds' #Name of file where imputation is stored:
+mickey2 <- readRDS(file = ifilename)
+maindf2 <- complete(mickey2)
+
 # app
 
 
@@ -156,11 +160,11 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
- 
-ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+ ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
-str(mickey)
+
+# str(mickey)
 #Dataframe appears to have been saved in mickey$pad$data
 # But isn't imputed...
 # We can get that using complete(mickey)
@@ -253,6 +257,7 @@ prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
 # maindf2[,rescols] <- NULL #make sure the recursive elements can't harm reruns by nullifying them pre-loop. 
  
 # age, gender party registration, county, and income, if we have it on everyone. 
+
 colnames(maindf2)
 
 Rprof('bensprof.txt')
