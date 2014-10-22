@@ -1,7 +1,7 @@
 # Wakefield Modeling Project Master's Thesis Edition:
 # A Ben Rogers Joint
 # Started 4/9/2014
-# Last Edited 9/28/2014
+# Last Edited 10/22/2014
  
 
 rm(list = ls())
@@ -15,8 +15,8 @@ dateUnformed <-  date()
 dateFormed <-  strsplit(dateUnformed, split = ' ')
 dateFormed <- paste(dateFormed[[1]][c(2,4)], collapse = ' ')
 
- maindf <-  readRDS('maindf.RDS')
- Vandat <- readRDS('Vandat.RDS')
+maindf <-  readRDS('maindf.RDS')
+Vandat <- readRDS('Vandat.RDS')
 
 
 #Load relevant packages
@@ -35,8 +35,25 @@ maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
 ifilename2 <-  'imputation4.rds' #Name of file where imputation is stored:
-mickey2 <- readRDS(file = ifilename)
+mickey2 <- readRDS(file = ifilename2)
 maindf2 <- complete(mickey2)
+
+colnames(maindf2)
+
+# Preproc for maindf2
+Agebreaks <- c(17, 30, 45, 64, 200)
+Agelabels <- c('18-30', '31-45', '46-64', '65+')
+maindf2$cat_age <- cut(maindf2$Age, breaks = Agebreaks , labels = Agelabels)
+
+maindf2$SpecVotes <- 0
+maindf2[ which(maindf2$voted_08g %in% c(1) & maindf2$voted_12g %in% c(1)), 'SpecVotes'] <- 1
+maindf2[maindf2$voted_10g %in% c(1), 'SpecVotes'] <- 0
+
+maindf2$TenDummy <- 0
+maindf2[maindf2$voted_10g %in% c(1), 'TenDummy'] <- 1
+
+
+
 
 # app
 
@@ -160,7 +177,7 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
- ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 
 
@@ -262,250 +279,252 @@ colnames(maindf2)
 
 Rprof('bensprof.txt')
 for(L in 1:length(deevlist)) { #begin DV loop
-deev <- deevlist[L] 
-maindf2$deevdiv <- maindf2[,deev] #for this one, we don't need to do anything to deevdiv to make it work. Unfortunately, it's pretty much everywhere instead of deev, so I'm just passing it on here.
-controldf2$deevdiv <- controldf2[,deev] #ditto.
-# colnames(maindf2)
-
-
-
-#chose columns for our sample
-numsforsample <- 1:ncol(maindf2)
-
-initlooplength <-  ncol(maindf2) - length( colsnottouse)
-
-# colnames(maindf2)
-
-colsnumstoavoid <-  which(colnames(maindf2) %in% colsnottouse)
-colnumstouse <- which(!colnames(maindf2) %in% colsnottouse)  # get all the columns we want to use as IVs
-
-
-#create variable selecting loop
-# This loop will select a single variable and regress it against deev
-currentReg <- NULL # This will hold the regression of the moment
-bestReg <- NULL
-bestVarResSt <- NULL
-# priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'cen00_medianincomeRec', "CountyName")
-# priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'CountyName','cen10_densityRec','cen00_medianincomeRec')
-
- priorIVs <- c('cat_age', 'Sex', 'Party', 'CountyName', 'SpecVotes', 'TenDummy', 'cen10_density', 'cen00_medianincome') #Mark's IV's
-
-
-  # priorIVs <- NULL #For when we want to do something without prior IVs
-
-for(NIVs in 1:MAXIVs){ #Outer Loop Begins
-metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
-# print( paste( 'NIVs =', NIVs))
-print(paste('dv =',deev))
-# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
-
-
-# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
-
-for(i in 1:initlooplength) {#Inner Loop Begins
-# for(i in 1:length) {#Inner Loop Begins
-
-iloopbreaker <- 1 #iloopbreaker begins as 1
-
- ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
-
-# ivstouse <- priorIVs
-
-# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
-# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
-ivformed <- paste(ivstouse, collapse = ' + ')
-formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
-
-
-traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
-
-# KFold cross-validation method of iv selection
-# trainerFolds <- createFolds(traindf2[, 'deevdiv'], k = nFold, list = T)
-
-# for(r in 1:nFold){ #Begin Kfold cross-validation loop
- # traindf3 <- na.omit(traindf2[-trainerFolds[[r]],]) #Create training data
-
-# testdf3 <-  na.omit(traindf2[trainerFolds[[r]],]) #create test data
- 
-# currentReg <-  multinom(formula = formedeqn, data = traindf3) #perform a beta regression and store it in currentReg
-
-# testdf3$testpreds <-  predict(currentReg, testdf3) #predict the test data's results, and store it in the test data's dataframe
-# testdf3$testpreds <- as.numeric(levels(testdf3$testpreds)[testdf3$testpreds])
-
-
-# if (r == 1) currentVarResidST <-  var(na.omit( testdf3$deevdiv - testdf3$testpreds)) else currentVarResidST <-  c(currentVarResidST, var(na.omit( testdf3$deevdiv - testdf3$testpreds)) ) #store the variance of the residuals; if it's the first go-round, put it them into a new variable called currentVarResidST. If it isn't, store them there using the c() function
-
-
-# }
-# currentVarResid <- mean(currentVarResidST)
-
-
-# currentReg <-  betareg(formula = formedeqn, data = traindf2, link = 'logit') #perform a beta regression and store it in currentReg
-
-currentReg <-  glm(formula = formedeqn, data = traindf2, family = 'binomial') #perform a regression and store it in currentReg
-# summary(currentReg)
-
-
- # bestReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a logit regression and store it in currentReg
-
-
- # currentVarResid <-  var( currentReg$resid)  #Get currentReg's residuals, and store their variance
-traindf2$currentpreds <- predict(currentReg, traindf2, 'response') 
-controldf2$currentpreds <- predict(currentReg, controldf2, 'response') 
-
-rtPredRat <-  (length(which(traindf2$deevdiv == 0 & traindf2$currentpreds <.5)) + length(which(traindf2$deevdiv == 1 & traindf2$currentpreds >.5)) )/length(traindf2$deevdiv)   #rtPredRat gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1, and
- 
- 
-controldf3 <- controldf2[which( is.na(controldf2$deevdiv) == F), c('deevdiv', 'currentpreds')] 
-
-onOnePreds <- length(which(controldf3$deevdiv == 1 & controldf3$currentpreds >=.5)) #Number of times the control group predicts ones correctly
-onZeroPreds <- length(which(controldf3$deevdiv == 0 & controldf3$currentpreds <.5)) #Number of times controlgroup predicts zeros correctly
-Npreds <- length(controldf3$deevdiv) #number of values that can be predicted
-
-
-contPredRat <-  (onOnePreds + onZeroPreds )/Npreds  #contPredRat gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1 as a ratio to the total number of possible values that can be predicted in the control group. 
- 
-
- 
- 
-# # # print(currentVarResid)
-
-if(i == 1 & NIVs == 1 ){ #On the very first pass,
-	bestReg <- currentReg #The First regression is the best regression.
-	bestRtPredRat <- contPredRat
-	# bestVarResid <- currentVarResid #Same with the residual variance
-	# bestVarResST <- bestVarResid #and thus we put it in storage
-	print(paste('Number of correctly predicted Zeros =', onZeroPreds))
-	print(paste('Number of correctly predicted Ones =', onOnePreds))
-
-	print(paste('Rate to beat =',round( bestRtPredRat, 6)))
-	bestIV <- colnames(maindf2)[colnumstouse[i]]
-	 } #keep them always if i == 1
-
-# print( paste('currentVarResid =', currentVarResid ))
-# print(paste('bestVarResid =', bestVarResid))
-
-# residdif <- currentVarResid - bestVarResid
-# # print(paste('currentVarResid - bestVarResid = ', round(currentVarResid, 4), '-', round(bestVarResid, 4), '≈', round(residdif, 4 )) )
-
-	# if(bestVarResid > currentVarResid){ #if the currentVarResid is lower than the bestVarresid
-		
-		if(contPredRat > bestRtPredRat){ #if the current prediction ratio is bigger than the best one so far
-		bestReg <- currentReg #put the current reg as best reg
-		# bestVarResid <- currentVarResid #put the currentVariance of the residuals as best
-		# bestVarResST <- c(bestVarResST, bestVarResid) #Put the new best VarResid in storage
-		
-		bestRtPredRat <- contPredRat # Put the current right prediction ratio as the best one, 
-		bestIV <- colnames(maindf2)[colnumstouse[i]] #and save the bestIV for storage in priorIVs
-		print(paste('Best Ratio of prediction rates =',round( bestRtPredRat,6)))
-		# print(paste('Control Prediction rates =',round( contPredRat,4)))
-		metabreaker <- 0 #make the metabreaker variable = 0
-		# print(paste('bestVarStDev =', round(sqrt(bestVarResid), 6)))
-		} # if the best regressions residual variance is bigger than the current regression's residual variance, the current regression replaces the prior best regression. 	
+	deev <- deevlist[L] 
+	maindf2$deevdiv <- maindf2[,deev] #for this one, we don't need to do anything to deevdiv to make it work. Unfortunately, it's pretty much everywhere instead of deev, so I'm just passing it on here.
+	controldf2$deevdiv <- controldf2[,deev] #ditto.
+	# colnames(maindf2)
 	
-
-# print(paste('i =', i))
-rm(rtPredRat)
-rm(contPredRat)
-
-if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
-
-}# Inner Loop Ends
-# 
-# print( paste( 'NIVs =', NIVs))
-priorIVs <- c(priorIVs, bestIV) #The bestIV now becomes part of the prior IVs
-print(priorIVs)
-
-#Executive Decision: This program must become more aggressive at countering multicollinearity, if only because the code runs at a snail's pace. 
-#Also, how to tell whether the IV's that survive the KFold cross validation are actually liable to reduce overall variance of residuals, or just lucky? Preferably without adding on to computational time? 
-
-
-
- #get the names of all IVs in the best Regression (excluding the intercept)
- length(priorIVs) == NIVs
- initlooplength <- initlooplength - 1 # since one of our variables is lost to the best regression, reduce the length of our internal loop by one
-
-#Now, we need to figure out how to make sure it's not going to repeatedly grab the same variable, eliminating it from colnumstouse
-
-
-
- IVcols <-  which(colnames(maindf2) %in% priorIVs) #get numbers of columns that have been used so far
-
-
-
- colnumstouse <- colnumstouse[ !colnumstouse %in% IVcols] #get rid of the columns used previously by taking them out of colnums to use. 
- 
- if(iloopbreaker == 0) break #if I loopbreaker is 0, break out of the iv loop and move onto the next dv
-} #Outer Loop ends
-# print(data.frame(controldf3$deevdiv, controldf3$currentpreds))
-#Print outer loop output
-print('')
-print('')
-print(deev)
-print( summary(bestReg))
-# str(bestReg)
-print(paste('nVal =', length(bestReg$residuals)))
-# summary(bestReg$residuals)
-# hist(bestReg$residuals)
-
-# print(var(bestReg$residuals))
-print('')
-
-
-#note to self. What if it doesn't select any after a certain point? Is there a danger that it might start arbitrarily pulling stuff out? I'll say it does, and this is something we have to watch for. 
-
-
-# summarize(maindf2[,IVcols])
-
-deevpreds <-  predict(bestReg, maindf2, 'response')
-contpreds <- predict(bestReg, controldf2, 'response')
-# finpreds <- predict(bestReg, Vandat, 'response')
-# str(bestReg)
-
-
-#create titles for our new variables, and add them to maindf2
-predtitler <- paste('Scoring on ', deev, sep = '') #title deevpreds for our export
-rectitler <- paste('Voter choice of ',deev, sep = '')
-# data.frame(c(names(deevpreds)), c( rownames(maindf2)))
-maindf2 <-  cbind(maindf2,  deevpreds)
-controldf2 <- cbind(controldf2, contpreds)
-# Vandat <- cbind(Vandat, 'torep' = finpreds)
-
-colnames(maindf2)[colnames(maindf2) == 'deevdiv'] <- rectitler
-colnames(maindf2)[colnames(maindf2) == 'deevpreds'] <- predtitler
-colnames(controldf2)[colnames(controldf2) == 'deevdiv'] <- rectitler
-colnames(controldf2)[colnames(controldf2) == 'contpreds'] <- predtitler
-
-# colnames(Vandat)[colnames(Vandat) == 'torep'] <- predtitler
-
-#Fix our predictions to the scale of the original queries
-
- maindf2[, rectitler] <- round(maindf2[,rectitler], 2) #
- maindf2[, predtitler] <- round(maindf2[,predtitler]*100, 5)
-
- controldf2[, rectitler] <- round(controldf2[, rectitler], 2)
- controldf2[, predtitler] <- round(controldf2[, predtitler] *100, 5)
-
-
-# Vandat[, predtitler] <- round(Vandat[, predtitler] *100, 2)
-
-
-
-
-# plot(log(1:length(bestVarResSt), 10), log(bestVarResSt, base = 10), type = 'l')
-# plot(1:length(bestVarResSt), bestVarResSt, type = 'l')
-
- if(L == 1) bestRegST <- bestReg else bestRegST <- c(bestRegST, bestReg)
-
-#Clean up before next iteration
-
-rm( deev, bestVarResSt, colnumstouse, bestRtPredRat)
-} # End DV Loop
-
-
-Rprof(NULL)
-
-summaryRprof('bensprof.txt')
-
-
-system('say Done!')
+	
+	
+	#chose columns for our sample
+	numsforsample <- 1:ncol(maindf2)
+	
+	initlooplength <-  ncol(maindf2) - length( colsnottouse)
+	
+	# colnames(maindf2)
+	
+	colsnumstoavoid <-  which(colnames(maindf2) %in% colsnottouse)
+	colnumstouse <- which(!colnames(maindf2) %in% colsnottouse)  # get all the columns we want to use as IVs
+	
+	
+	#create variable selecting loop
+	# This loop will select a single variable and regress it against deev
+	currentReg <- NULL # This will hold the regression of the moment
+	bestReg <- NULL
+	bestVarResSt <- NULL
+	# priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'cen00_medianincomeRec', "CountyName")
+	# priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'CountyName','cen10_densityRec','cen00_medianincomeRec')
+	
+	# priorIVs <- c('cat_age', 'Sex', 'Party', 'CountyName', 'SpecVotes', 'TenDummy', 'cen10_density', 'cen00_medianincome') #Mark's IV's
+	priorIVs <- c('cat_age', 'Sex', 'Party', 'SpecVotes', 'TenDummy')
+	 # priorIVs <- NULL #for when we want to run it without initializing. Surprisingly, this does two things. 1. It performs more poorly than if we add AIVs (that is, overall lower criterion values), 2. It doesn't select any of the AIVs we think are relevant. 3. It doesn't 
+	
+	  # priorIVs <- NULL #For when we want to do something without prior IVs
+	
+	for(NIVs in 1:MAXIVs){ #Outer Loop Begins
+		metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
+		# print( paste( 'NIVs =', NIVs))
+		print(paste('dv =',deev))
+		# if(NIVs == 1) priorIVs <- c('cat_age', 'Sex', 'Party')
+		
+		
+		# Need to figure out how to make it so that If at no point does something happen in the loop below, break out of the outermost loop
+		
+		for(i in 1:initlooplength) {#Inner Loop Begins
+			# for(i in 1:length) {#Inner Loop Begins
+			
+			iloopbreaker <- 1 #iloopbreaker begins as 1
+			
+			 ivstouse <- c(priorIVs, colnames(maindf2)[colnumstouse[i]])
+			
+			# ivstouse <- priorIVs
+			
+			# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
+			# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
+			ivformed <- paste(ivstouse, collapse = ' + ')
+			formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
+			
+			
+			traindf2 <- maindf2[complete.cases(maindf2$deevdiv), c('deevdiv', ivstouse)]
+			
+			# KFold cross-validation method of iv selection
+			# trainerFolds <- createFolds(traindf2[, 'deevdiv'], k = nFold, list = T)
+			
+			# for(r in 1:nFold){ #Begin Kfold cross-validation loop
+			 # traindf3 <- na.omit(traindf2[-trainerFolds[[r]],]) #Create training data
+			
+			# testdf3 <-  na.omit(traindf2[trainerFolds[[r]],]) #create test data
+			 
+			# currentReg <-  multinom(formula = formedeqn, data = traindf3) #perform a beta regression and store it in currentReg
+			
+			# testdf3$testpreds <-  predict(currentReg, testdf3) #predict the test data's results, and store it in the test data's dataframe
+			# testdf3$testpreds <- as.numeric(levels(testdf3$testpreds)[testdf3$testpreds])
+			
+			
+			# if (r == 1) currentVarResidST <-  var(na.omit( testdf3$deevdiv - testdf3$testpreds)) else currentVarResidST <-  c(currentVarResidST, var(na.omit( testdf3$deevdiv - testdf3$testpreds)) ) #store the variance of the residuals; if it's the first go-round, put it them into a new variable called currentVarResidST. If it isn't, store them there using the c() function
+			
+			
+			# }
+			# currentVarResid <- mean(currentVarResidST)
+			
+			
+			# currentReg <-  betareg(formula = formedeqn, data = traindf2, link = 'logit') #perform a beta regression and store it in currentReg
+			
+			currentReg <-  glm(formula = formedeqn, data = traindf2, family = 'binomial') #perform a regression and store it in currentReg
+			# summary(currentReg)
+			
+			
+			 # bestReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a logit regression and store it in currentReg
+			
+			
+			 # currentVarResid <-  var( currentReg$resid)  #Get currentReg's residuals, and store their variance
+			traindf2$currentpreds <- predict(currentReg, traindf2, 'response') 
+			controldf2$currentpreds <- predict(currentReg, controldf2, 'response') 
+			
+			rtPredRat <-  (length(which(traindf2$deevdiv == 0 & traindf2$currentpreds <.5)) + length(which(traindf2$deevdiv == 1 & traindf2$currentpreds >.5)) )/length(traindf2$deevdiv)   #rtPredRat gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1, and
+			 
+			 #criter (I'm not typing criterion throughout this) gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1 as a ratio to the total number of possible values that can be predicted in the control group. 
+			 #New criterion for judging model: 
+			
+			# # controldf3 <- controldf2[which( is.na(controldf2$deevdiv) == F), c('deevdiv', 'currentpreds')] 
+			
+			# onOnePreds <- length(which(controldf3$deevdiv == 1 & controldf3$currentpreds >=.5)) #Number of times the control group predicts ones correctly
+			# onZeroPreds <- length(which(controldf3$deevdiv == 0 & controldf3$currentpreds <.5)) #Number of times controlgroup predicts zeros correctly
+			# Npreds <- length(controldf3$deevdiv) #number of values that can be predicted
+			
+			
+			# criter <-  (onOnePreds + onZeroPreds )/Npreds  
+			fullpreds <-  ifelse(traindf2$currentpreds > 0.5, 1, 0)
+			
+			perctrue <-  prop.table(table(fullpreds ==  traindf2$deevdiv, exclude = NULL))['TRUE']
+			
+			 
+			criter <- perctrue
+			 
+			 
+			# # # print(currentVarResid)
+			
+			if(i == 1 & NIVs == 1 ){ #On the very first pass,
+				bestReg <- currentReg #The First regression is the best regression.
+				bestRtPredRat <- criter
+				# bestVarResid <- currentVarResid #Same with the residual variance
+				# bestVarResST <- bestVarResid #and thus we put it in storage
+				# print(paste('Number of correctly predicted Zeros =', onZeroPreds))
+				# print(paste('Number of correctly predicted Ones =', onOnePreds))
+			
+				print(paste('Rate to beat =',round( criter, 6)))
+				bestIV <- colnames(maindf2)[colnumstouse[i]]
+				 } #keep them always if i == 1
+			
+			# print( paste('currentVarResid =', currentVarResid ))
+			# print(paste('bestVarResid =', bestVarResid))
+			
+			# residdif <- currentVarResid - bestVarResid
+			# # print(paste('currentVarResid - bestVarResid = ', round(currentVarResid, 4), '-', round(bestVarResid, 4), '≈', round(residdif, 4 )) )
+			
+				# if(bestVarResid > currentVarResid){ #if the currentVarResid is lower than the bestVarresid
+					
+					if(criter > bestRtPredRat){ #if the current prediction ratio is bigger than the best one so far
+					bestReg <- currentReg #put the current reg as best reg		
+					bestRtPredRat <- criter # Put the current right prediction ratio as the best one, 
+					bestIV <- colnames(maindf2)[colnumstouse[i]] #and save the bestIV for storage in priorIVs
+					print(paste('Best Criterion Value =',round( bestRtPredRat,6)))
+					metabreaker <- 0 #make the metabreaker variable = 0
+					} # if the best regressions residual variance is bigger than the current regression's residual variance, the current regression replaces the prior best regression. 	
+				
+			
+			# print(paste('i =', i))
+			rm(rtPredRat)
+			rm(criter)# rm(contPredRat)
+			
+			if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
+			
+		}# Inner Loop Ends
+		# 
+		# print( paste( 'NIVs =', NIVs))
+		priorIVs <- c(priorIVs, bestIV) #The bestIV now becomes part of the prior IVs
+		print(priorIVs)
+		
+		#Executive Decision: This program must become more aggressive at countering multicollinearity, if only because the code runs at a snail's pace. 
+		#Also, how to tell whether the IV's that survive the KFold cross validation are actually liable to reduce overall variance of residuals, or just lucky? Preferably without adding on to computational time? 
+		
+		
+		
+		 #get the names of all IVs in the best Regression (excluding the intercept)
+		 length(priorIVs) == NIVs
+		 initlooplength <- initlooplength - 1 # since one of our variables is lost to the best regression, reduce the length of our internal loop by one
+		
+		#Now, we need to figure out how to make sure it's not going to repeatedly grab the same variable, eliminating it from colnumstouse
+		
+		
+		
+		 IVcols <-  which(colnames(maindf2) %in% priorIVs) #get numbers of columns that have been used so far
+		
+		
+		
+		 colnumstouse <- colnumstouse[ !colnumstouse %in% IVcols] #get rid of the columns used previously by taking them out of colnums to use. 
+		 
+		 if(iloopbreaker == 0) break #if I loopbreaker is 0, break out of the iv loop and move onto the next dv
+	} #Outer Loop ends
+	# print(data.frame(controldf3$deevdiv, controldf3$currentpreds))
+	#Print outer loop output
+	print('')
+	print('')
+	print(deev)
+	print( summary(bestReg))
+	# str(bestReg)
+	print(paste('nVal =', length(bestReg$residuals)))
+	# summary(bestReg$residuals)
+	# hist(bestReg$residuals)
+	
+	# print(var(bestReg$residuals))
+	print('')
+	
+	
+	#note to self. What if it doesn't select any after a certain point? Is there a danger that it might start arbitrarily pulling stuff out? I'll say it does, and this is something we have to watch for. 
+	
+	
+	# summarize(maindf2[,IVcols])
+	
+	deevpreds <-  predict(bestReg, maindf2, 'response')
+	contpreds <- predict(bestReg, controldf2, 'response')
+	# finpreds <- predict(bestReg, Vandat, 'response')
+	# str(bestReg)
+	
+	
+	#create titles for our new variables, and add them to maindf2
+	predtitler <- paste('Scoring on ', deev, sep = '') #title deevpreds for our export
+	rectitler <- paste('Voter choice of ',deev, sep = '')
+	# data.frame(c(names(deevpreds)), c( rownames(maindf2)))
+	maindf2 <-  cbind(maindf2,  deevpreds)
+	controldf2 <- cbind(controldf2, contpreds)
+	# Vandat <- cbind(Vandat, 'torep' = finpreds)
+	
+	colnames(maindf2)[colnames(maindf2) == 'deevdiv'] <- rectitler
+	colnames(maindf2)[colnames(maindf2) == 'deevpreds'] <- predtitler
+	colnames(controldf2)[colnames(controldf2) == 'deevdiv'] <- rectitler
+	colnames(controldf2)[colnames(controldf2) == 'contpreds'] <- predtitler
+	
+	# colnames(Vandat)[colnames(Vandat) == 'torep'] <- predtitler
+	
+	#Fix our predictions to the scale of the original queries
+	
+	 maindf2[, rectitler] <- round(maindf2[,rectitler], 2) #
+	 maindf2[, predtitler] <- round(maindf2[,predtitler]*100, 5)
+	
+	 controldf2[, rectitler] <- round(controldf2[, rectitler], 2)
+	 controldf2[, predtitler] <- round(controldf2[, predtitler] *100, 5)
+	
+	
+	# Vandat[, predtitler] <- round(Vandat[, predtitler] *100, 2)
+	
+	
+	
+	
+	# plot(log(1:length(bestVarResSt), 10), log(bestVarResSt, base = 10), type = 'l')
+	# plot(1:length(bestVarResSt), bestVarResSt, type = 'l')
+	
+	 if(L == 1) bestRegST <- bestReg else bestRegST <- c(bestRegST, bestReg)
+	
+	#Clean up before next iteration
+	
+	rm( deev, bestVarResSt, colnumstouse, bestRtPredRat)
+	} # End DV Loop
+	
+	
+	Rprof(NULL)
+	
+	summaryRprof('bensprof.txt')
+	
+	
+	# system('say Done!')
