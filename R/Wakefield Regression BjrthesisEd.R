@@ -34,9 +34,9 @@ library(mice)
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
-ifilename2 <-  'imputation4.rds' #Name of file where imputation is stored:
-mickey2 <- readRDS(file = ifilename2)
-maindf2 <- complete(mickey2)
+ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+mickey <- readRDS(file = ifilename)
+maindf2 <- complete(mickey)
 
 colnames(maindf2)
 
@@ -162,7 +162,7 @@ impdata$reg_party_dem <- NULL
 impcor <-  cor(model.matrix(sp03~., impdata))
 sort(impcor[,'cons_dbi_travel_vacation_3plusplanetrips'])  #When you look at it like this, it's very clear that cons_dbi_travel_vacation_air is so close as to completely track cons_dbi_travel_vacation_3plusplanetrips
 
-data.frame('ThreePlus' = impdata$cons_dbi_travel_vacation_3plusplanetrips, 'airtravel' = impdata$cons_dbi_travel_vacation_air, 'diff' = impdata$cons_dbi_travel_vacation_3plusplanetrips- impdata$cons_dbi_travel_vacation_air )
+# data.frame('ThreePlus' = impdata$cons_dbi_travel_vacation_3plusplanetrips, 'airtravel' = impdata$cons_dbi_travel_vacation_air, 'diff' = impdata$cons_dbi_travel_vacation_3plusplanetrips- impdata$cons_dbi_travel_vacation_air )
 impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plusplanetrips, as its meaning is much clearer.
 
  # morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips.
@@ -177,9 +177,8 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
 
 # saveRDS(object = morty, file = 'imputationtest.rds')
  
-ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
-mickey <- readRDS(file = ifilename)
-
+# ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+# mickey <- readRDS(file = ifilename)
 
 # str(mickey)
 #Dataframe appears to have been saved in mickey$pad$data
@@ -189,16 +188,16 @@ mickey <- readRDS(file = ifilename)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
 # mousesample <- sample(1:nrow(complete(mickey)), 9 * nrow(complete(mickey))/10)
-xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt- others_num_female, data = complete(mickey)[,])
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
 # colnames(xdat) 
 # length( xdat)
-str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There are still some NAs in our data
-dim(xdata)
-head(xdata)
+# str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There were still some NAs in our data
+# dim(xdata)
+# head(xdata)
 
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
 # ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
-ydata <- complete(mickey)[,'sp08']
+ydata <- maindf2[,'sp08']
 # grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
 # testglmnet <-  glmnet( 
 # x = xdata,
@@ -245,22 +244,26 @@ lambda = cvtest$lambda.min
 
 coef(bestlasso)
 library(glmnetcr) 
+
 print(ifilename)
 nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+print(nonzerocoefsfr)
 
-mickey.test <- complete(mickey)[-mousesample,]
+# mickey.test <- complete(mickey)[-mousesample,]
 # mickey.test$sp08.2 <- mickey.test$sp08
 # mickey.test$sp08 <- NULL
 
 # newxval <- data.matrix(mickey.test)[, which(colnames(complete(mickey)) != 'sp08')]
-newxval <- data.matrix(mickey.test)
+# newxval <- data.matrix(mickey.test)
 
 # W/Dr. Johnson
 blpreds <-  predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response' )
 #Craft PCP Function
 
-cbind(blpreds, ydata)
+# cbind(blpreds, ydata)
 ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
+nrow(maindf2)
+length(ydatpred)
 prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
 
 
@@ -360,7 +363,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 			
 			# currentReg <-  betareg(formula = formedeqn, data = traindf2, link = 'logit') #perform a beta regression and store it in currentReg
 			
-			currentReg <-  glm(formula = formedeqn, data = traindf2, family = 'binomial') #perform a regression and store it in currentReg
+			currentReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a regression and store it in currentReg
 			# summary(currentReg)
 			
 			
@@ -522,9 +525,11 @@ for(L in 1:length(deevlist)) { #begin DV loop
 	} # End DV Loop
 	
 	
-	Rprof(NULL)
+Rprof(NULL)
 	
-	summaryRprof('bensprof.txt')
+summaryRprof('bensprof.txt')
+	
+	
 	
 	
 	# system('say Done!')
