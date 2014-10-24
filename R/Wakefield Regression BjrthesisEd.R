@@ -69,10 +69,12 @@ head(maindf2)
 
 # pull out a tenth of the data for control purposes
 set.seed(12345)
-tenperc <-  createFolds(complete.cases(maindf2[,'sp03']), k = 10)
+tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 
+controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as it had
 maindf2 <- maindf2[-tenperc$Fold06,]
-controldf2 <- maindf2[tenperc$Fold06,]
+
+rownames(maindf2[tenperc$Fold10,])
 
 
 # junkermod <-  glm(sp03 ~. , family ='binomial',  data = maindf2)
@@ -374,7 +376,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 			traindf2$currentpreds <- predict(currentReg, traindf2, 'response') 
 			controldf2$currentpreds <- predict(currentReg, controldf2, 'response') 
 			
-			rtPredRat <-  (length(which(traindf2$deevdiv == 0 & traindf2$currentpreds <.5)) + length(which(traindf2$deevdiv == 1 & traindf2$currentpreds >.5)) )/length(traindf2$deevdiv)   #rtPredRat gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1, and
+			# rtPredRat <-  (length(which(traindf2$deevdiv == 0 & traindf2$currentpreds <.5)) + length(which(traindf2$deevdiv == 1 & traindf2$currentpreds >.5)) )/length(traindf2$deevdiv)   #rtPredRat gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1, and
 			 
 			 #criter (I'm not typing criterion throughout this) gives us the ratio of the number of predictions which are less than 50 and equal zero and the number greater than 50 that actually equal 1 as a ratio to the total number of possible values that can be predicted in the control group. 
 			 #New criterion for judging model: 
@@ -427,7 +429,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 				
 			
 			# print(paste('i =', i))
-			rm(rtPredRat)
+			# rm(rtPredRat)
 			rm(criter)# rm(contPredRat)
 			
 			if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
@@ -521,7 +523,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 	
 	#Clean up before next iteration
 	
-	rm( deev, bestVarResSt, colnumstouse, bestRtPredRat)
+	rm( deev, colnumstouse, bestRtPredRat)
 	} # End DV Loop
 	
 	
@@ -529,7 +531,11 @@ Rprof(NULL)
 	
 summaryRprof('bensprof.txt')
 	
-	
-	
+BestRegPreds <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0)
+prop.table(table( BestRegPreds == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions
+prop.table(table( ydatpred == maindf2$sp08, exclude = NULL)) #table of Lasso's predictions
+
+
+
 	
 	# system('say Done!')
