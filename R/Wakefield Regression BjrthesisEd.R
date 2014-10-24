@@ -34,7 +34,7 @@ library(mice)
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
-ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 maindf2 <- complete(mickey)
 
@@ -71,7 +71,7 @@ head(maindf2)
 set.seed(12345)
 tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 
-controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as it had
+controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
 maindf2 <- maindf2[-tenperc$Fold06,]
 
 rownames(maindf2[tenperc$Fold10,])
@@ -112,12 +112,12 @@ colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','att
 
 
 #Imputation section
- impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
- colnames(impdata)
-apply( apply(impdata, 2, is.na), 2, sum)
-# colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
+ # impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
+ # colnames(impdata)
+# apply( apply(impdata, 2, is.na), 2, sum)
+# # colnames(impdata)[ unique(which(is.na(impdata[,1:20] ) == T, arr.ind = T)[,2])]
 
-str(maindf2, list.len = ncol(maindf2))
+# str(maindf2, list.len = ncol(maindf2))
 # lastn <- 225
 # print(colnames(maindf2)[lastn])
 
@@ -132,40 +132,40 @@ str(maindf2, list.len = ncol(maindf2))
 	# rm(mickey)
 # }
  
-#Recode age and sex in our data to use the complete columns.
-colnames(impdata)
-impdata$Age <- impdata$age_years
-impdata$age_years <- NULL
+# #Recode age and sex in our data to use the complete columns.
+# colnames(impdata)
+# impdata$Age <- impdata$age_years
+# impdata$age_years <- NULL
 
-#Get gender_male into the same format as sex, and replace the old version
-data.frame( impdata$Sex, impdata$gender_male)
-impdata$gender_male <- factor(impdata$gender_male)
-levels(impdata$gender_male) <- c( levels(impdata$gender_male), 'M', 'F')
-impdata$gender_male[ impdata$gender_male == 1] <- 'M'
-impdata$gender_male[ impdata$gender_male == 0] <- 'F'
-impdata$gender_male <- factor(impdata$gender_male)
+# #Get gender_male into the same format as sex, and replace the old version
+# data.frame( impdata$Sex, impdata$gender_male)
+# impdata$gender_male <- factor(impdata$gender_male)
+# levels(impdata$gender_male) <- c( levels(impdata$gender_male), 'M', 'F')
+# impdata$gender_male[ impdata$gender_male == 1] <- 'M'
+# impdata$gender_male[ impdata$gender_male == 0] <- 'F'
+# impdata$gender_male <- factor(impdata$gender_male)
 
 
-which(impdata$Sex != impdata$gender_male) #All are now the same w/recoding, except for NA's
-impdata$Sex <- impdata$gender_male
-impdata$gender_female <- NULL
-impdata$gender_male <- NULL
-impdata$others_num_male <- NULL
+# which(impdata$Sex != impdata$gender_male) #All are now the same w/recoding, except for NA's
+# impdata$Sex <- impdata$gender_male
+# impdata$gender_female <- NULL
+# impdata$gender_male <- NULL
+# impdata$others_num_male <- NULL
 
-#get rid of redundant party variables
-impdata$clarity_party <- NULL 
-impdata$others_num_dem <- NULL
-impdata$others_num_rep <- NULL
-impdata$reg_party_dem <- NULL
+# #get rid of redundant party variables
+# impdata$clarity_party <- NULL 
+# impdata$others_num_dem <- NULL
+# impdata$others_num_rep <- NULL
+# impdata$reg_party_dem <- NULL
 
-# impdata$age_years[606] <- NA
+# # impdata$age_years[606] <- NA
 
-#While we can deal with sex and age, this 3+ planetrips needs to be considered separately
-impcor <-  cor(model.matrix(sp03~., impdata))
-sort(impcor[,'cons_dbi_travel_vacation_3plusplanetrips'])  #When you look at it like this, it's very clear that cons_dbi_travel_vacation_air is so close as to completely track cons_dbi_travel_vacation_3plusplanetrips
+# #While we can deal with sex and age, this 3+ planetrips needs to be considered separately
+# impcor <-  cor(model.matrix(sp03~., impdata))
+# sort(impcor[,'cons_dbi_travel_vacation_3plusplanetrips'])  #When you look at it like this, it's very clear that cons_dbi_travel_vacation_air is so close as to completely track cons_dbi_travel_vacation_3plusplanetrips
 
 # data.frame('ThreePlus' = impdata$cons_dbi_travel_vacation_3plusplanetrips, 'airtravel' = impdata$cons_dbi_travel_vacation_air, 'diff' = impdata$cons_dbi_travel_vacation_3plusplanetrips- impdata$cons_dbi_travel_vacation_air )
-impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plusplanetrips, as its meaning is much clearer.
+# impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plusplanetrips, as its meaning is much clearer.
 
  # morty <-  mice(impdata, m = 1, maxit = 1) # so it looks like some columns are just getting switched under the radar. Not sure why, but a full run ignores 3 columns; Age, Sex, and cons_dbi_travel_vacation_3plusplanetrips.
  # We have learned why. It turns out that mice ignores any column it believes is similar enough to others
@@ -190,7 +190,7 @@ impdata$cons_dbi_travel_vacation_air <- NULL #use cons_dbi_travel_vacation_3plus
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
 # mousesample <- sample(1:nrow(complete(mickey)), 9 * nrow(complete(mickey))/10)
-xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - -reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
+xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 -reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
 # colnames(xdat) 
 # length( xdat)
 # str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There were still some NAs in our data
@@ -268,7 +268,12 @@ nrow(maindf2)
 length(ydatpred)
 prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
 
-
+newxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = controldf2)
+colnames(newxdata)
+lassopreds <- predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response')
+lassopredsCont <- predict(bestlasso, newx = newxdata, lambda = cvtest$lambda.min, type = 'response')
+lassopredsRes <-  ifelse( lassopreds >= .5, 1,0)
+lassopredsContRes <-  ifelse( lassopredsCont >= .5, 1,0)
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
@@ -531,11 +536,20 @@ Rprof(NULL)
 	
 summaryRprof('bensprof.txt')
 	
-BestRegPreds <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0)
-prop.table(table( BestRegPreds == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions
-prop.table(table( ydatpred == maindf2$sp08, exclude = NULL)) #table of Lasso's predictions
+BestRegPreds <-  ifelse( predict(bestReg, maindf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
+prop.table(table( BestRegPreds == maindf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on training set. 
+
+prop.table(table( lassopredsRes == maindf2$sp08, exclude = NULL)) #table of Lasso's predictions on training set.
 
 
+	
+BestRegPredsCont <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
+prop.table(table( BestRegPredsCont == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on test set. 
+
+prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on training set.
+
+
+# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
 	
 	# system('say Done!')
