@@ -546,7 +546,7 @@ prop.table(table( lassopredsRes == maindf2$sp08, exclude = NULL)) #table of Lass
 BestRegPredsCont <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
 prop.table(table( BestRegPredsCont == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on test set. 
 
-prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on training set.
+prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on test set.
 
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
