@@ -10,11 +10,11 @@ ptr <- proc.time()
 
 # function section
 
-critergen <- function( predicted, measured) {#Critergen is a function that when fully operational, will generate different criteria for how well data is predicted.
+critergen <- function( predicted, measured, fulltabl = FALSE ) {#Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.
 #inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
 predictedRes <- ifelse(predicted >= .5, 1,0)   
 
-return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
+if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
 }
 
 
@@ -42,11 +42,12 @@ library(leaps)
 library(glmnet)
 library(mice)
 library(mgcv) 
+library(randomForest)
  
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
-ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
+ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 maindf2 <- complete(mickey)
 
@@ -237,29 +238,6 @@ coef(bestlasso)
 library(glmnetcr) 
 print(ifilename)
 data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
-
-# teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
-
-# y = ydata,
-# family = 'binomial',
-# alpha = 1, #Perform the lasso!
-# lambda = grid
-# ) 
-cvtest <- cv.glmnet(x = xdata, y = ydata, alpha = 1) #Find best value of penalty for our imputed data
-plot(cvtest) #plot the value, because it looks cool. 
-
-bestlasso<-  glmnet( 
-x = xdata,
-y = ydata,
-family = 'binomial',
-alpha = 1, #Perform the lasso!
-lambda = cvtest$lambda.min
-) 
-
-coef(bestlasso)
-library(glmnetcr) 
-
-print(ifilename)
 nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
 print(nonzerocoefsfr)
 
@@ -274,7 +252,7 @@ print(nonzerocoefsfr)
 blpreds <-  predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response' )
 #Craft PCP Function
 
-critergen(blpreds, maindf2[,'sp08'])
+critergen(blpreds, maindf2[,'sp08'], fulltabl = T)
 
 # cbind(blpreds, ydata)
 # ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
@@ -286,8 +264,9 @@ newxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month
 colnames(newxdata)
 lassopreds <- predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response')
 lassopredsCont <- predict(bestlasso, newx = newxdata, lambda = cvtest$lambda.min, type = 'response')
-lassopredsRes <-  ifelse( lassopreds >= .5, 1,0)
-lassopredsContRes <-  ifelse( lassopredsCont >= .5, 1,0)
+
+# lassopredsRes <-  ifelse( lassopreds >= .5, 1,0)
+# lassopredsContRes <-  ifelse( lassopredsCont >= .5, 1,0)
 
 
 #Work on an elastic net Implementation
@@ -310,10 +289,10 @@ lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))] # and its corre
 ) 
 
 netpreds <- predict(bestnet, newx = xdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
-netpredsRes <- ifelse(netpreds >= .5, 1,0)
+# netpredsRes <- ifelse(netpreds >= .5, 1,0)
 
 netpredsCont <- predict(bestnet, newx = newxdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
-netpredsContRes <- ifelse(netpredsCont >= .5, 1,0)
+# netpredsContRes <- ifelse(netpredsCont >= .5, 1,0)
 
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
@@ -435,12 +414,12 @@ for(L in 1:length(deevlist)) { #begin DV loop
 			
 			
 			# criter <-  (onOnePreds + onZeroPreds )/Npreds  
-			fullpreds <-  ifelse(traindf2$currentpreds > 0.5, 1, 0)
+			# fullpreds <-  ifelse(traindf2$currentpreds > 0.5, 1, 0)
 			
-			perctrue <-  prop.table(table(fullpreds ==  traindf2$deevdiv, exclude = NULL))['TRUE']
+			# perctrue <-  prop.table(table(fullpreds ==  traindf2$deevdiv, exclude = NULL))['TRUE']
 			
 			 
-			criter <- perctrue
+			criter <- critergen(traindf2$currentpreds, traindf2$deevdiv)
 			 
 			 
 			# # # print(currentVarResid)
@@ -577,21 +556,18 @@ Rprof(NULL)
 	
 summaryRprof('bensprof.txt')
 	
-BestRegPreds <-  ifelse( predict(bestReg, maindf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
-prop.table(table( BestRegPreds == maindf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on training set. 
+critergen(predict(bestReg, maindf2, 'response'), maindf2$sp08, fulltabl = T) #true % of BeSiVa's Predictions on training set
 
-prop.table(table( lassopredsRes == maindf2$sp08, exclude = NULL)) #table of Lasso's predictions on training set.
+critergen( lassopreds, maindf2$sp08, fulltabl = T) #table of Lasso's predictions on training set.
 
-prop.table(table(netpredsRes == maindf2$sp08, exclude = NULL)) #table of elastic net's predictions on training set
+critergen(netpreds, maindf2$sp08, fulltabl = T) #table of elastic net's predictions on training set
 
 	
-BestRegPredsCont <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
-prop.table(table( BestRegPredsCont == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on test set. 
+critergen(predict(bestReg, controldf2, 'response'), controldf2$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
 
-prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on test set.
+critergen(lassopredsCont, controldf2$sp08, fulltabl = T) #table of Lasso's predictions on test set.
 
-prop.table(table(netpredsContRes == controldf2$sp08, exclude = NULL)) #table of elastic net's predictions on test set
-
+critergen(netpredsCont, controldf2$sp08, fulltabl = T) #table of elastic net's predictions on test set
 
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
