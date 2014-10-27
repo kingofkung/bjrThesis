@@ -6,6 +6,18 @@
 
 rm(list = ls())
 ptr <- proc.time()
+
+
+# function section
+
+critergen <- function( predicted, measured) {#Critergen is a function that when fully operational, will generate different criteria for how well data is predicted.
+#inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
+predictedRes <- ifelse(predicted >= .5, 1,0)   
+
+return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
+}
+
+
 #Go to correct file location.  
 
 inputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Input 2"
@@ -262,11 +274,13 @@ print(nonzerocoefsfr)
 blpreds <-  predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response' )
 #Craft PCP Function
 
+critergen(blpreds, maindf2[,'sp08'])
+
 # cbind(blpreds, ydata)
-ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
-nrow(maindf2)
-length(ydatpred)
-prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
+# ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
+# nrow(maindf2)
+# length(ydatpred)
+# prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
 
 newxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = controldf2)
 colnames(newxdata)
@@ -277,7 +291,7 @@ lassopredsContRes <-  ifelse( lassopredsCont >= .5, 1,0)
 
 
 #Work on an elastic net Implementation
-netalphaval <- seq(0,1, by = .02) #create a sequence for alpha that can be switched out as needed
+netalphaval <- seq(0,1, by = .1) #create a sequence for alpha that can be switched out as needed
 for(n in 1:length(netalphaval)){
 	cvtestelnet <- cv.glmnet(x = xdata, y = ydata, alpha = netalphaval[n]) #Find best value of penalty for our imputed data
 	if(n==1) aldf <- data.frame(al = netalphaval[n], lam.min = cvtestelnet$lambda.min, err.min = min(cvtestelnet$cvm)) else aldf <- rbind(aldf, data.frame(al = netalphaval[n],lam.min = cvtestelnet$lambda.min, err.min = min(cvtestelnet$cvm))) #If n == 1, save just the first three values in a data frame. Otherwise, add the values onto the data frame
@@ -576,7 +590,7 @@ prop.table(table( BestRegPredsCont == controldf2$sp08, exclude = NULL)) #table o
 
 prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on test set.
 
-prop.table(table(netpredsContRes == controldf2$sp08)) #table of elastic net's predictions on training set
+prop.table(table(netpredsContRes == controldf2$sp08, exclude = NULL)) #table of elastic net's predictions on test set
 
 
 
