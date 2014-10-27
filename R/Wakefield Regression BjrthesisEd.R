@@ -29,12 +29,12 @@ library(caret) #loads ggplot2
 library(leaps)
 library(glmnet)
 library(mice)
- 
+library(mgcv) 
  
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
 
-ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
+ifilename <-  'imputation4.rds' #Name of file where imputation is stored:
 mickey <- readRDS(file = ifilename)
 maindf2 <- complete(mickey)
 
@@ -275,6 +275,33 @@ lassopredsCont <- predict(bestlasso, newx = newxdata, lambda = cvtest$lambda.min
 lassopredsRes <-  ifelse( lassopreds >= .5, 1,0)
 lassopredsContRes <-  ifelse( lassopredsCont >= .5, 1,0)
 
+
+#Work on an elastic net Implementation
+netalphaval <- seq(0,1, by = .02) #create a sequence for alpha that can be switched out as needed
+for(n in 1:length(netalphaval)){
+	cvtestelnet <- cv.glmnet(x = xdata, y = ydata, alpha = netalphaval[n]) #Find best value of penalty for our imputed data
+	if(n==1) aldf <- data.frame(al = netalphaval[n], lam.min = cvtestelnet$lambda.min, err.min = min(cvtestelnet$cvm)) else aldf <- rbind(aldf, data.frame(al = netalphaval[n],lam.min = cvtestelnet$lambda.min, err.min = min(cvtestelnet$cvm))) #If n == 1, save just the first three values in a data frame. Otherwise, add the values onto the data frame
+	
+}
+
+plot(cv.glmnet(x = xdata, y = ydata, alpha = netalphaval[which(aldf$err.min == min(aldf$err.min))]))
+
+#perform elastic net regression
+bestnet <-  glmnet( 
+x = xdata,
+y = ydata,
+family = 'binomial',
+alpha = aldf$al[ which(aldf$err.min == min(aldf$err.min))], #Perform the elastic net with alpha that minimized crossvalidation error
+lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))] # and its corresponding lambda value
+) 
+
+netpreds <- predict(bestnet, newx = xdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
+netpredsRes <- ifelse(netpreds >= .5, 1,0)
+
+netpredsCont <- predict(bestnet, newx = newxdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
+netpredsContRes <- ifelse(netpredsCont >= .5, 1,0)
+
+
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
 # model.matrix(y~., data = teedat)
@@ -341,7 +368,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 			
 			# if(NIVs == 1) ivformed <-  ivstouse  else ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) # if NIVs is not one, we need to form a list of IVs to place into formed eqn. If it isn't then we can just use the text from ivstouse
 			# ivformed <-  do.call(paste,c(as.list( ivstouse), sep = ' + ')) #Great if you want to use do.call, but I found something better below
-			ivformed <- paste(ivstouse, collapse = ' + ')
+			ivformed <-  paste(ivstouse, collapse = ' + ')
 			formedeqn <- as.formula(paste('deevdiv', " ~ ", ivformed)) #Form our equation. In this version, we're going to need to figure out the DV's structure before we start these loops
 			
 			
@@ -372,7 +399,7 @@ for(L in 1:length(deevlist)) { #begin DV loop
 			
 			currentReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a regression and store it in currentReg
 			# summary(currentReg)
-			
+			predict(currentReg)
 			
 			 # bestReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a logit regression and store it in currentReg
 			
@@ -541,12 +568,16 @@ prop.table(table( BestRegPreds == maindf2$sp08, exclude = NULL)) #table of BeSiV
 
 prop.table(table( lassopredsRes == maindf2$sp08, exclude = NULL)) #table of Lasso's predictions on training set.
 
+prop.table(table(netpredsRes == maindf2$sp08, exclude = NULL)) #table of elastic net's predictions on training set
 
 	
 BestRegPredsCont <-  ifelse( predict(bestReg, controldf2, 'response') >= .5, 1,0) #If the prediction is higher than .5, return 1. Otherwise, return 0
 prop.table(table( BestRegPredsCont == controldf2$sp08, exclude = NULL)) #table of BeSiVa's Predictions on test set. 
 
 prop.table(table( lassopredsContRes == controldf2$sp08, exclude = NULL)) #table of Lasso's predictions on test set.
+
+prop.table(table(netpredsContRes == controldf2$sp08)) #table of elastic net's predictions on training set
+
 
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
