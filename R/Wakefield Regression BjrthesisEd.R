@@ -234,12 +234,15 @@ alpha = 1, #Perform the lasso!
 lambda = cvtest$lambda.min
 ) 
 
-coef(bestlasso)
+coef(bestlasso) 
+
+
 library(glmnetcr) 
 print(ifilename)
 data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
 nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
 print(nonzerocoefsfr)
+nrow(nonzerocoefsfr) - 1 #according to Zou Hastie, and Tibshirani (2007) The number of nonzero coefficients in the lasso is an unbiased estimator of the Effective Degrees of Freedom in the lasso. I wonder about the elastic net...
 
 # mickey.test <- complete(mickey)[-mousesample,]
 # mickey.test$sp08.2 <- mickey.test$sp08
