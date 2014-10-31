@@ -311,6 +311,26 @@ prop.table(table(ydata == treetest$predicted))
 
 forestpredsCont <-  predict(treetest, newxdata)
 
+# traintreetest <- train(x = xdata, y = factor(ydata), method = "rf")
+# print(traintreetest) #suggests best value for mtry is 102
+besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
+plot(besttreetest)
+prop.table(table(ydata == besttreetest$predicted))
+prop.table(table(controldf2$sp08 == as.numeric(as.character( predict(besttreetest,newxdata))) ))
+
+# implement k-nearest neighbor classification. It does horribly
+# knntest <-  train(x = xdata, y = ydata, method = 'knn')
+# prop.table(table( ydata == round(predict(knntest, xdata))))
+# prop.table(table(controldf2$sp08 == round( predict(knntest,newxdata)))) 
+
+is.matrix(xdata)
+
+#Work on putting together adaboost
+adatrainer <-  train(x = xdata, y = ydata, method = 'ada')
+adatest <-  ada(xdata, ydata)
+
+prop.table(table( ydata == predict(adatest, newdata = data.frame(xdata))))
+prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxdata))))
 
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
