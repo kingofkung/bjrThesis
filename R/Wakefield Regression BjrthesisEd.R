@@ -299,6 +299,20 @@ netpredsCont <- predict(bestnet, newx = newxdata, lambda = aldf$lam.min[ which(a
 # netpredsContRes <- ifelse(netpredsCont >= .5, 1,0)
 
 
+# Work on getting trees included in sample
+treetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 500, mtry = 30)
+
+summary(treetest)
+print(treetest)
+# imporder <- order(treetest$importance, decreasing = T)
+# data.frame(rownames(treetest$importance)[imporder], MeanDecreaseGini= treetest$importance[imporder])
+plot(treetest) # Plots error rates or MSE of the randomForest object
+prop.table(table(ydata == treetest$predicted))
+
+forestpredsCont <-  predict(treetest, newxdata)
+
+
+
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
 # model.matrix(y~., data = teedat)
@@ -566,6 +580,10 @@ critergen( lassopreds, maindf2$sp08, fulltabl = T) #table of Lasso's predictions
 
 critergen(netpreds, maindf2$sp08, fulltabl = T) #table of elastic net's predictions on training set
 
+critergen(as.numeric(as.character(treetest$predicted)), maindf2$sp08, fulltabl = T)
+
+
+#Begin looking at test set
 	
 critergen(predict(bestReg, controldf2, 'response'), controldf2$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
 
@@ -573,6 +591,7 @@ critergen(lassopredsCont, controldf2$sp08, fulltabl = T) #table of Lasso's predi
 
 critergen(netpredsCont, controldf2$sp08, fulltabl = T) #table of elastic net's predictions on test set
 
+critergen(as.numeric(as.character(forestpredsCont)), controldf2$sp08, fulltabl = T)
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
