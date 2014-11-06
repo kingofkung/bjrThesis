@@ -72,7 +72,7 @@ maindf2[maindf2$voted_10g %in% c(1), 'TenDummy'] <- 1
 # app
 
 
-varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck')
+varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck', 'datelastcalled', 'datasource_name','agent_name', 'firstname', 'lastname')
 
 maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
 
@@ -109,8 +109,8 @@ MAXIVs <- 10 # Number of Go rounds for IV selection
 deevlist <- c('sp03', 'sp04','sp05','sp06','sp08') 
  # deevlist <- 'sp03SuppRec' #for when we want to test a feature, but are overwhelmed by the number of regressions
  #Select things that we don't want in our IV list below
- dvcols <- c('sp03', 'sp04','sp05','sp06','sp08',"sp03Rec2", "sp04Rec2", "sp04avgmove",  "sp05Rec2", "sp05avgmove", "sp06Rec2", "sp06avgmove",  "sp08Rec2", "sp08avgmove", 'sp03SuppRec', 'sp04SuppRec','sp05SuppRec','sp06SuppRec','sp08SuppRec',  'deevdiv', 'deevfac') #anything that deals with a DV
- rescols <- c('Preds_for_sp03Rec2', 'Recoded_sp03Rec2','Preds_for_sp04Rec2', 'Recoded_sp04Rec2', 'Preds_for_sp05Rec2', 'Recoded_sp05Rec2', 'Preds_for_sp06Rec2', 'Recoded_sp06Rec2', 'Preds_for_sp08Rec2', 'Recoded_sp08Rec2') #Any thing that resembles a dv or is a stored dv. 
+ dvcols <- c('sp03', 'sp04','sp05','sp06','sp08',  'deevdiv', 'deevfac') #anything that deals with a DV
+ # rescols <- c('Preds_for_sp03Rec2', 'Recoded_sp03Rec2','Preds_for_sp04Rec2', 'Recoded_sp04Rec2', 'Preds_for_sp05Rec2', 'Recoded_sp05Rec2', 'Preds_for_sp06Rec2', 'Recoded_sp06Rec2', 'Preds_for_sp08Rec2', 'Recoded_sp08Rec2') #Any thing that resembles a dv or is a stored dv. 
 extraagevars <-  colnames(maindf2)[grep("age_", colnames(maindf2))]
 gendervars <- colnames(maindf2)[grep("male", colnames(maindf2))]
 
@@ -119,14 +119,16 @@ zerovar <- c('voted_12p_dem', 'voted_10p_dem')
 mostlyNAs <- c('cons_on_outside_list')
 ActivateVars <- c('prospectid', 'PersonID', 'zipcode')
  # VANVars <- c('VANID')
- VANVars <-  colnames(Vandat)
+ # VANVars <-  colnames(Vandat)
 clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
 
 possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
 
-colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
+colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, colnames(maindf2)[nearZeroVar(maindf2)])
 
 
+maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+colnames(maindf2)
 #Imputation section
  # impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
  # colnames(impdata)
@@ -337,6 +339,10 @@ is.matrix(xdata)
 adatrainer <-  train(x = xdata, y = ydata, method = 'ada')
 adatest <-  ada(xdata, ydata)
 
+adatest2 <- ada(x = maindf[,!colnames(maindf) %in% c(colsnottouse, varsToNotInclude, 'dispositionid','sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = maindf$sp08)
+
+head(maindf)
+
 prop.table(table( ydata == predict(adatest, newdata = data.frame(xdata))))
 prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxdata))))
 
@@ -372,6 +378,7 @@ for(L in 1:1) { #begin DV loop
 	colsnumstoavoid <-  which(colnames(maindf2) %in% colsnottouse)
 	colnumstouse <- which(!colnames(maindf2) %in% colsnottouse)  # get all the columns we want to use as IVs
 	
+	write.csv( colnames(maindf2[,colnumstouse]), '/Users/bjr/GitHub/bjrThesis/R/colnumsused.csv')
 	
 	#create variable selecting loop
 	# This loop will select a single variable and regress it against deev
@@ -625,3 +632,4 @@ critergen(as.numeric(as.character(forestpredsCont)), controldf2$sp08, fulltabl =
 
 	
 	# system('say Done!')
+#So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
