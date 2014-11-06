@@ -114,13 +114,15 @@ deevlist <- c('sp03', 'sp04','sp05','sp06','sp08')
 extraagevars <-  colnames(maindf2)[grep("age_", colnames(maindf2))]
 gendervars <- colnames(maindf2)[grep("male", colnames(maindf2))]
 
-redundant <- c('reg_party_dem','others_num_dem', 'others_num_rep', 'reg_party_ind', 'clarity_party', 'cons_dbi_educ_nohs', 'cat_ageDe', extraagevars, gendervars,'Age','Sex','Party') #Age sex and Party aren't actually redundant, but since we hard code them into the loop, this is a good place to tell the code, hey we don't need you included in the boostrapping selection process 
+redundant <- c('reg_party_dem','others_num_dem', 'others_num_rep', 'reg_party_ind', 'clarity_party', 'cons_dbi_educ_nohs', 'cat_ageDe', extraagevars, gendervars) #Age sex and Party aren't actually redundant, but since we hard code them into the loop, this is a good place to tell the code, hey we don't need you included in the boostrapping selection process 
 zerovar <- c('voted_12p_dem', 'voted_10p_dem')
 mostlyNAs <- c('cons_on_outside_list')
 ActivateVars <- c('prospectid', 'PersonID', 'zipcode')
  # VANVars <- c('VANID')
  VANVars <-  colnames(Vandat)
 clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
+
+possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
 
 colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, VANVars, rescols, colnames(maindf2)[nearZeroVar(maindf2)])
 
@@ -313,6 +315,8 @@ forestpredsCont <-  predict(treetest, newxdata)
 
 # traintreetest <- train(x = xdata, y = factor(ydata), method = "rf")
 # print(traintreetest) #suggests best value for mtry is 102
+incxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, maindf[,!colnames(maindf) %in% varsToNotInclude])
+
 besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 plot(besttreetest)
 prop.table(table(ydata == besttreetest$predicted))
@@ -374,10 +378,10 @@ for(L in 1:length(deevlist)) { #begin DV loop
 	# priorIVs <- c('cat_age', 'Sex', 'PartyRec', 'CountyName','cen10_densityRec','cen00_medianincomeRec')
 	
 	# priorIVs <- c('cat_age', 'Sex', 'Party', 'CountyName', 'SpecVotes', 'TenDummy', 'cen10_density', 'cen00_medianincome') #Mark's IV's
-	priorIVs <- c('cat_age', 'Sex', 'Party', 'SpecVotes', 'TenDummy')
+	# priorIVs <- c('cat_age', 'Sex', 'Party', 'SpecVotes', 'TenDummy')
 	 # priorIVs <- NULL #for when we want to run it without initializing. Surprisingly, this does two things. 1. It performs more poorly than if we add AIVs (that is, overall lower criterion values), 2. It doesn't select any of the AIVs we think are relevant. 3. It doesn't 
 	
-	  # priorIVs <- NULL #For when we want to do something without prior IVs
+	  priorIVs <- NULL #For when we want to do something without prior IVs
 	
 	for(NIVs in 1:MAXIVs){ #Outer Loop Begins
 		metabreaker <- 999 #set metabreaker to some nonzero value. 999, in honor of the current greatest troll of all time. 
