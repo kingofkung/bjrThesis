@@ -304,6 +304,8 @@ netpredsCont <- predict(bestnet, newx = newxdata, lambda = aldf$lam.min[ which(a
 # Work on getting trees included in sample
 treetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 500, mtry = 30)
 
+
+
 summary(treetest)
 print(treetest)
 # imporder <- order(treetest$importance, decreasing = T)
@@ -316,6 +318,8 @@ forestpredsCont <-  predict(treetest, newxdata)
 # traintreetest <- train(x = xdata, y = factor(ydata), method = "rf")
 # print(traintreetest) #suggests best value for mtry is 102
 incxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, maindf[,!colnames(maindf) %in% varsToNotInclude])
+
+randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08)) #NA Not permitted in predictors
 
 besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 plot(besttreetest)
@@ -350,8 +354,8 @@ prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxd
 colnames(maindf2)
 
 Rprof('bensprof.txt')
-for(L in 1:length(deevlist)) { #begin DV loop
-	deev <- deevlist[L] 
+for(L in 1:1) { #begin DV loop
+	deev <- 'sp08'
 	maindf2$deevdiv <- maindf2[,deev] #for this one, we don't need to do anything to deevdiv to make it work. Unfortunately, it's pretty much everywhere instead of deev, so I'm just passing it on here.
 	controldf2$deevdiv <- controldf2[,deev] #ditto.
 	# colnames(maindf2)
