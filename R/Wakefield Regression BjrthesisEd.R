@@ -321,9 +321,9 @@ forestpredsCont <-  predict(treetest, newxdata)
 
 # traintreetest <- train(x = xdata, y = factor(ydata), method = "rf")
 # print(traintreetest) #suggests best value for mtry is 102
-incxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, maindf[,!colnames(maindf) %in% varsToNotInclude])
+# incxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, maindf[,!colnames(maindf) %in% varsToNotInclude])
 
-randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08)) #NA Not permitted in predictors
+randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08), na.action = na.exclude) #NA Not permitted in predictors
 
 besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 plot(besttreetest)
@@ -474,7 +474,7 @@ for(L in 1:1) { #begin DV loop
 			# perctrue <-  prop.table(table(fullpreds ==  traindf2$deevdiv, exclude = NULL))['TRUE']
 			
 			 
-			criter <- critergen(traindf2$currentpreds, traindf2$deevdiv)
+			criter <- critergen(controldf2$currentpreds, controldf2$deevdiv) #now generates criterion based on validation set
 			 
 			 
 			# # # print(currentVarResid)
@@ -629,6 +629,10 @@ critergen(lassopredsCont, controldf2$sp08, fulltabl = T) #table of Lasso's predi
 critergen(netpredsCont, controldf2$sp08, fulltabl = T) #table of elastic net's predictions on test set
 
 critergen(as.numeric(as.character(forestpredsCont)), controldf2$sp08, fulltabl = T)
+
+
+critergen(as.numeric(as.character(predict(adatest, newdata = data.frame(newxdata)))), controldf2$sp08, fulltabl = T)
+
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
