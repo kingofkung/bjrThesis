@@ -80,6 +80,10 @@ maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, 
 head(maindf2)
 
 
+#See what happens when we move the data shift to before controldf2 is defined
+possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
+maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+
 
 # pull out a tenth of the data for control purposes
 set.seed(12345)
@@ -122,12 +126,10 @@ ActivateVars <- c('prospectid', 'PersonID', 'zipcode')
  # VANVars <-  colnames(Vandat)
 clarityvars <- colnames(maindf2)[grep('clarity', colnames(maindf2))]
 
-possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
 
 colsnottouse <- c(dvcols,"sp07Rec", "sp07.2Rec", "sp08Rec", 'reg_party_rep','attemptcount', 'voterid', 'votebuilder_identifier', 'dsnRec', 'cen10_asian', 'namecheck', 'phone_primary_cell',zerovar, redundant, mostlyNAs, ActivateVars, clarityvars, colnames(maindf2)[nearZeroVar(maindf2)])
 
 
-# maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
 colnames(maindf2)
 #Imputation section
  # impdata <- maindf2[,c(deevlist, colnames(maindf2)[ !colnames(maindf2) %in% colsnottouse],  colnames(maindf2)[colnames(maindf2) %in% redundant])] #Put data to impute in a variable
