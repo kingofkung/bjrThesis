@@ -80,9 +80,9 @@ maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, 
 head(maindf2)
 
 
-#See what happens when we move the data shift to before controldf2 is defined
-possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
-maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+# #See what happens when we move the data shift to before controldf2 is defined
+# possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
+# maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
 
 
 # pull out a tenth of the data for control purposes
