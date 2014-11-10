@@ -1,0 +1,11 @@
+""
+"","scores..Intercept.","scores.Party2","scores.Party3"
+"1",10.4685583791231,-15.1546969490725,-6.595731664938
+"","scores..Intercept.","scores.Party2","scores.Party3","scores.cons_dbi_autoloan_tradein"
+"1",3.68021164684697,-15.1439909251782,-6.34677547491332,1.5944084471586
+"","scores..Intercept.","scores.Party2","scores.Party3","scores.cons_dbi_autobuyer_new"
+"1",1.92197072414239,-15.1327454669376,-6.24720075794692,2.9574421844355
+"","scores..Intercept.","scores.Party2","scores.Party3","scores.cons_dbi_autobuyer_new","scores.TenDummy"
+"1",1.67131705131187,-15.1382165682152,-5.9398190109288,2.84562226423822,0.650526222942658
+"","scores..Intercept.","scores.Party2","scores.Party3","scores.cons_dbi_autobuyer_new","scores.TenDummy","scores.cons_dbi_autoloan_creditunion"
+"1",1.56478336440248,-15.1061857339297,-5.87215007954366,2.93694019362093,0.553904432760635,-1.16971780707719

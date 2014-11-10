@@ -81,8 +81,8 @@ head(maindf2)
 
 
 # #See what happens when we move the data shift to before controldf2 is defined
-# possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
-# maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
+maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
 
 
 # pull out a tenth of the data for control purposes
@@ -362,6 +362,8 @@ prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxd
 colnames(maindf2)
 
 Rprof('bensprof.txt')
+write.table('',file = '/Users/bjr/GitHub/bjrThesis/R/scores.csv', sep = ',', col.names = F, row.names = F) #clear scores table					
+
 for(L in 1:1) { #begin DV loop
 	deev <- 'sp08'
 	maindf2$deevdiv <- maindf2[,deev] #for this one, we don't need to do anything to deevdiv to make it work. Unfortunately, it's pretty much everywhere instead of deev, so I'm just passing it on here.
@@ -449,7 +451,8 @@ for(L in 1:1) { #begin DV loop
 			# summary(currentReg)
 			predict(currentReg)
 			
-			 # bestReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a logit regression and store it in currentReg
+			
+						 # bestReg <-  glm(formula = formedeqn, data = maindf2, family = 'binomial') #perform a logit regression and store it in currentReg
 			
 			
 			 # currentVarResid <-  var( currentReg$resid)  #Get currentReg's residuals, and store their variance
@@ -476,12 +479,12 @@ for(L in 1:1) { #begin DV loop
 			 
 			criter <- critergen(controldf2$currentpreds, controldf2$deevdiv) #now generates criterion based on validation set
 			 
-			 
 			# # # print(currentVarResid)
 			
 			if(i == 1 & NIVs == 1 ){ #On the very first pass,
 				bestReg <- currentReg #The First regression is the best regression.
 				bestRtPredRat <- criter
+
 				# bestVarResid <- currentVarResid #Same with the residual variance
 				# bestVarResST <- bestVarResid #and thus we put it in storage
 				# print(paste('Number of correctly predicted Zeros =', onZeroPreds))
@@ -498,9 +501,13 @@ for(L in 1:1) { #begin DV loop
 			# # print(paste('currentVarResid - bestVarResid = ', round(currentVarResid, 4), '-', round(bestVarResid, 4), '≈', round(residdif, 4 )) )
 			
 				# if(bestVarResid > currentVarResid){ #if the currentVarResid is lower than the bestVarresid
-					
 					if(criter > bestRtPredRat){ #if the current prediction ratio is bigger than the best one so far
-					bestReg <- currentReg #put the current reg as best reg		
+					bestReg <- currentReg #put the current reg as best reg
+					print(summary(bestReg)$coefficients[,3])#print z values
+					print(criter) 
+
+					write.table(t(data.frame(scores = summary(bestReg)$coefficients[,3])), append = T, sep =',', file = '/Users/bjr/GitHub/bjrThesis/R/scores.csv' , col.names = NA)#z values are saved to a table called scores. Note that occasionally, we see two tables with the same number of columns. This is ok. It just means that the program found a couple of values that beat the original. Let's just hope it lets us write them as intended
+					print('Summary should be here')
 					bestRtPredRat <- criter # Put the current right prediction ratio as the best one, 
 					bestIV <- colnames(maindf2)[colnumstouse[i]] #and save the bestIV for storage in priorIVs
 					print(paste('Best Criterion Value =',round( bestRtPredRat,6)))
@@ -510,7 +517,7 @@ for(L in 1:1) { #begin DV loop
 			
 			# print(paste('i =', i))
 			# rm(rtPredRat)
-			rm(criter)# rm(contPredRat)
+			 rm(criter)# rm(contPredRat)
 			
 			if(metabreaker != 0) iloopbreaker <- 0 #if metabreaker is still equal to its original nonzero value, break the loop.
 			
