@@ -355,10 +355,13 @@ prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxd
 
 regforss <- lm(sp08 ~ . , maindf2) #create regression for determining which variables are NA when left in the model
 colnamestouse <- names(coef(regforss)[!is.na(coef(regforss))])[-1] #get the column names that are left in, making sure to leave out the intercept
-subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
+write.table(colnamestouse, '/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
+
+# colnamestouse <- read.table('/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
+subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse$x]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
 
 
-forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, really.big = T) #perform forward subset selection on subseldf, using the
+forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, method = 'forward') #perform forward subset selection on subseldf, using the
 coef(forsubsel, 10)
 
 plot(forsubsel, scale = 'adjr2')
