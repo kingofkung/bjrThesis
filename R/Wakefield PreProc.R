@@ -1,11 +1,11 @@
-#Wakefield Modelling data pre-processing
-# A Ben Rogers Joint
-# Started 4/9/2014
-# Last Edited
+Wakefield Modelling data pre-processing
+A Ben Rogers Joint
+Started 4/9/2014
+Last Edited
 
 rm(list = ls())
 ptr <- proc.time()
-#Go to correct file location.  
+Go to correct file location.  
 
 inputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Input 2"
 setwd(inputwd)
@@ -18,7 +18,7 @@ dateFormed <- paste(dateFormed[[1]][c(2,4)], collapse = ' ')
  Vandat <- readRDS('Vandat.RDS')
 
 
-#Load relevant packages
+Load relevant packages
 
 library(car)
 library(xlsx)
@@ -31,160 +31,158 @@ library(glmnet)
  
  
 
-# # # #  
- # #Read in the files:
-# #Bit of a problem here. Mark wants us to read in files from two separate segments of surveying. Now we know which segments are 
+# # #  
+ #Read in the files:
+#Bit of a problem here. Mark wants us to read in files from two separate segments of surveying. Now we know which segments are 
 
-# # maindf <-  read.csv("FivePrimaryVoterInfo.csv") #Appears to be the main dataset, includes the DV
+# maindf <-  read.csv("FivePrimaryVoterInfo.csv") #Appears to be the main dataset, includes the DV
 
-# mdf1 <- read.csv("Survey Round 1.csv", stringsAsFactors = F)
-# data.frame(colnames(mdf1)) #Note: mdf question columns start at sp02 and end at sp08. The two that vary are sp02 and sp07
-# #To deal with this, we separate out the questions that are different between surveys, and add a couple of new columns on for new questions
-# mdf1qs <- mdf1[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
-# # mdf1qs$sp02.2 <- factor('')
-# # mdf1qs$sp07.2 <- factor('')
-# colnames(mdf1qs)[2] <- 'firstnameq1'
-# colnames(mdf1qs)[3] <- 'lastnameq1'
+mdf1 <- read.csv("Survey Round 1.csv", stringsAsFactors = F)
+data.frame(colnames(mdf1)) #Note: mdf question columns start at sp02 and end at sp08. The two that vary are sp02 and sp07
+#To deal with this, we separate out the questions that are different between surveys, and add a couple of new columns on for new questions
+mdf1qs <- mdf1[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
+# mdf1qs$sp02.2 <- factor('')
+# mdf1qs$sp07.2 <- factor('')
+colnames(mdf1qs)[2] <- 'firstnameq1'
+colnames(mdf1qs)[3] <- 'lastnameq1'
 
-# length(rownames(mdf1qs))
-# head(mdf1qs)
+length(rownames(mdf1qs))
+head(mdf1qs)
 
-# mdf2 <- read.csv("Survey Round 2.csv", stringsAsFactors = F) #Then, we place the new questions in the new columns, and clear the former sp02 and sp07 columns. 
-# mdf2qs <- mdf2[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
-# str(mdf2qs)
-# mdf2qs$sp02.2 <- mdf2qs$sp02
-# mdf2qs$sp07.2 <- mdf2qs$sp07
-# colnames(mdf2qs)[2] <- 'firstnameq2'
-# colnames(mdf2qs)[3] <- 'lastnameq2'
+mdf2 <- read.csv("Survey Round 2.csv", stringsAsFactors = F) #Then, we place the new questions in the new columns, and clear the former sp02 and sp07 columns. 
+mdf2qs <- mdf2[, c('voterid', 'firstname', 'lastname','sp02', 'sp07')]
+str(mdf2qs)
+mdf2qs$sp02.2 <- mdf2qs$sp02
+mdf2qs$sp07.2 <- mdf2qs$sp07
+colnames(mdf2qs)[2] <- 'firstnameq2'
+colnames(mdf2qs)[3] <- 'lastnameq2'
 
-# maindf <- rbind(mdf1[,c(1:33, 35:38, 40:41)], mdf2[, c(1:33, 35:38, 40:41)]) #This grabs  everything that stays the same in the two datasets. Right now that's all but sp02, sp07, but this can change when we get new data. 
-# maindf <-  cbind(maindf, mdf1qs[match(maindf$voterid, mdf1qs$voterid), c('sp02', 'sp07', 'lastnameq1')]  )
-# maindf <-  cbind(maindf, mdf2qs[match(maindf$voterid, mdf2qs$voterid), c('sp02.2', 'sp07.2', 'lastnameq2')]  )
+maindf <- rbind(mdf1[,c(1:33, 35:38, 40:41)], mdf2[, c(1:33, 35:38, 40:41)]) #This grabs  everything that stays the same in the two datasets. Right now that's all but sp02, sp07, but this can change when we get new data. 
+maindf <-  cbind(maindf, mdf1qs[match(maindf$voterid, mdf1qs$voterid), c('sp02', 'sp07', 'lastnameq1')]  )
+maindf <-  cbind(maindf, mdf2qs[match(maindf$voterid, mdf2qs$voterid), c('sp02.2', 'sp07.2', 'lastnameq2')]  )
 
-# str(maindf)
+str(maindf)
 
-# set.seed(12345)
-# maindf[sample(1:nrow(maindf), size = 25),c('lastname', 'lastnameq1', 'lastnameq2')] #This is a consistency check. It checks out.
+set.seed(12345)
+maindf[sample(1:nrow(maindf), size = 25),c('lastname', 'lastnameq1', 'lastnameq2')] #This is a consistency check. It checks out.
 
-# length(rownames(maindf))
+length(rownames(maindf))
 
-# otherdat <- read.csv('wakefield_prelim_data_pull.csv', stringsAsFactors = F) #bring in an IV Dataset
-# Vandat <- read.csv('IVDat2.csv', stringsAsFactors = F)
-# Vandensinc  <- read.csv("wakefield_data_export.csv", stringsAsFactors = F)
-# head(Vandensinc)
-# #purge commas and Match density and income data to Vandat
+otherdat <- read.csv('wakefield_prelim_data_pull.csv', stringsAsFactors = F) #bring in an IV Dataset
+Vandat <- read.csv('IVDat2.csv', stringsAsFactors = F)
+Vandensinc  <- read.csv("wakefield_data_export.csv", stringsAsFactors = F)
+head(Vandensinc)
+#purge commas and Match density and income data to Vandat
 
-# str(Vandensinc)
+str(Vandensinc)
 
-# # Vandensinc$votebuilder_identifier2 <- lapply(Vandensinc$votebuilder_identifier,FUN = as.character)
-# Vandensinc$votebuilder_identifier <- gsub(',', '', Vandensinc$votebuilder_identifier)
-# Vandensinc$votebuilder_identifier <- as.numeric(Vandensinc$votebuilder_identifier)
+# Vandensinc$votebuilder_identifier2 <- lapply(Vandensinc$votebuilder_identifier,FUN = as.character)
+Vandensinc$votebuilder_identifier <- gsub(',', '', Vandensinc$votebuilder_identifier)
+Vandensinc$votebuilder_identifier <- as.numeric(Vandensinc$votebuilder_identifier)
 
-# # Vandensinc$census_2000_medianincome2 <- lapply(Vandensinc$census_2000_medianincome,FUN = as.character)
-# Vandensinc$census_2000_medianincome <- gsub(',', '', Vandensinc$census_2000_medianincome)
-# Vandensinc$census_2000_medianincome <- as.numeric(Vandensinc$census_2000_medianincome)
-
-
-# # Vandensinc$density_land_sq_km2 <- lapply(Vandensinc$density_land_sq_km,FUN = as.character)
-# Vandensinc$density_land_sq_km <- gsub(',', '', Vandensinc$density_land_sq_km)
-# Vandensinc$density_land_sq_km <- as.numeric(Vandensinc$density_land_sq_km)
+# Vandensinc$census_2000_medianincome2 <- lapply(Vandensinc$census_2000_medianincome,FUN = as.character)
+Vandensinc$census_2000_medianincome <- gsub(',', '', Vandensinc$census_2000_medianincome)
+Vandensinc$census_2000_medianincome <- as.numeric(Vandensinc$census_2000_medianincome)
 
 
+# Vandensinc$density_land_sq_km2 <- lapply(Vandensinc$density_land_sq_km,FUN = as.character)
+Vandensinc$density_land_sq_km <- gsub(',', '', Vandensinc$density_land_sq_km)
+Vandensinc$density_land_sq_km <- as.numeric(Vandensinc$density_land_sq_km)
 
 
-# #Match IV data to the main dataset
-# otherdatarows <- match(maindf$voterid, otherdat$votebuilder_identifier)
-# Vandatrows <- match(maindf$voterid, Vandat$VANID)
-# # otherdatarows2 <- match(maindf$voterid, otherdat2$VANID)
-# colnames(otherdat)
-# maindf <- cbind(maindf, Vandat[Vandatrows,])
-# maindf <- cbind(maindf, otherdat[otherdatarows,])
-# maindf$namecheck <- otherdat[otherdatarows, 'votebuilder_identifier']
- # # na.omit(data.frame(maindf$voterid, maindf$namecheck)) #Checks out.
-# # data.frame(maindf[which(maindf$sp03 != ""), ])[1521,]
-
-# #Match IV data to Vandat
-# VandatMatcherrows <- match(Vandat$VANID, Vandensinc$votebuilder_identifier)
-
-# Vandat <- cbind(Vandat, Vandensinc[VandatMatcherrows,])
-# head(Vandat[, c('VANID','votebuilder_identifier') ])
-
-# #rename relevant columns to correct names 'cen10_densityRec', 'cen00_medianincomeRec'
-# colnames(Vandat)[ which(colnames( Vandat) == 'census_2000_medianincome')] <- 'cen00_medianincome'
-
-# colnames(Vandat)[ which(colnames( Vandat) == 'density_land_sq_km')] <- 'cen10_density'
 
 
-# #general guess: Are you a heavy 
-# #match in data
+#Match IV data to the main dataset
+otherdatarows <- match(maindf$voterid, otherdat$votebuilder_identifier)
+Vandatrows <- match(maindf$voterid, Vandat$VANID)
+# otherdatarows2 <- match(maindf$voterid, otherdat2$VANID)
+colnames(otherdat)
+maindf <- cbind(maindf, Vandat[Vandatrows,])
+maindf <- cbind(maindf, otherdat[otherdatarows,])
+maindf$namecheck <- otherdat[otherdatarows, 'votebuilder_identifier']
+ # na.omit(data.frame(maindf$voterid, maindf$namecheck)) #Checks out.
+# data.frame(maindf[which(maindf$sp03 != ""), ])[1521,]
 
-# #Get Jake ID Numbers of everyone we want 'full' IV data for.
+#Match IV data to Vandat
+VandatMatcherrows <- match(Vandat$VANID, Vandensinc$votebuilder_identifier)
+
+Vandat <- cbind(Vandat, Vandensinc[VandatMatcherrows,])
+head(Vandat[, c('VANID','votebuilder_identifier') ])
+
+#rename relevant columns to correct names 'cen10_densityRec', 'cen00_medianincomeRec'
+colnames(Vandat)[ which(colnames( Vandat) == 'census_2000_medianincome')] <- 'cen00_medianincome'
+
+colnames(Vandat)[ which(colnames( Vandat) == 'density_land_sq_km')] <- 'cen10_density'
 
 
-# # # # as.character(levels(mdf1qs$sp02))
+#general guess: Are you a heavy 
+#match in data
 
-# # # print(mdf1qs$sp02)
+#Get Jake ID Numbers of everyone we want 'full' IV data for.
 
-# # # topullVANS <- c(maindf[  which(maindf$sp02 != "" & maindf$sp02 != " "),'voterid'], maindf[  which(maindf$sp02.2 != "" & maindf$sp02.2 != " "),'voterid'])
 
-# # topullVANS == 1544185
-# # length(topullVANS)
+# # # as.character(levels(mdf1qs$sp02))
 
-# # colnames(maindf)[33]
+# # print(mdf1qs$sp02)
 
-# # # maindf[which( maindf$voterid %in% topullVANS ), c('lastname', 'lastnameq1', 'sp02', 'sp02.2', 'sp03')]
+# # topullVANS <- c(maindf[  which(maindf$sp02 != "" & maindf$sp02 != " "),'voterid'], maindf[  which(maindf$sp02.2 != "" & maindf$sp02.2 != " "),'voterid'])
 
-# # # write.csv(topullVANS, file = 'topull completed2.csv')
+# topullVANS == 1544185
+# length(topullVANS)
+
+# colnames(maindf)[33]
+
+# # maindf[which( maindf$voterid %in% topullVANS ), c('lastname', 'lastnameq1', 'sp02', 'sp02.2', 'sp03')]
+
+# # write.csv(topullVANS, file = 'topull completed2.csv')
 
  
 
 
-# # Recoding section,  
-# #In data for wakefield, need to recode sp02-sp08
-# #Mark would like to see 'movement' variables, in that we determine how people's opinions change between one question to the next. I'm going to try and put together a set that includes 
-# # a. how people moved on a question compared to the first question with a numeric option (sp03, first ID), which We will refert to as the average movement.
-# # b. how people moved on a question compared to the question preceeding it, which we will call instantaneous movement.
-# # c. how people moved from a question to the final iD
-# # recode sp02
-# maindf$sp02Rec <- maindf$sp02 #save value in new variable, so I can redo this without issue
-# levels(maindf$sp02Rec) <- c(levels(maindf$sp02Rec), "Higher than $10.10", "Raise it to $10.10", "Raise it to $9.00", "Leave it as is", "Eliminate the Minimum Wage")
+# Recoding section,  
+#In data for wakefield, need to recode sp02-sp08
+#Mark would like to see 'movement' variables, in that we determine how people's opinions change between one question to the next. I'm going to try and put together a set that includes 
+# a. how people moved on a question compared to the first question with a numeric option (sp03, first ID), which We will refert to as the average movement.
+# b. how people moved on a question compared to the question preceeding it, which we will call instantaneous movement.
+# c. how people moved from a question to the final iD
+# recode sp02
+maindf$sp02Rec <- maindf$sp02 #save value in new variable, so I can redo this without issue
+levels(maindf$sp02Rec) <- c(levels(maindf$sp02Rec), "Higher than $10.10", "Raise it to $10.10", "Raise it to $9.00", "Leave it as is", "Eliminate the Minimum Wage")
 
-# maindf$sp02Rec[which(maindf$sp02Rec %in% c("6 - Would not answer ", "5 - Not sure/no opinion"))] <- NA
-# maindf$sp02Rec[which(maindf$sp02Rec %in% "0 - Higher than $10.10")] <- "Higher than $10.10"
-# maindf$sp02Rec[which(maindf$sp02Rec %in% "1 - Raise to $10.10")] <- "Raise it to $10.10"
-# maindf$sp02Rec[which(maindf$sp02Rec %in% "2 - Raise to $9.00")] <- "Raise it to $9.00"
-# maindf$sp02Rec[which(maindf$sp02Rec %in% "3 - Leave it as is")] <- "Leave it as is"
-# maindf$sp02Rec[which(maindf$sp02Rec %in% " 4 - Eliminate the minimum wage")] <- "Eliminate the Minimum Wage"
-
-
- # # " 4 - Eliminate the minimum wage" "0 - Higher than $10.10"         
- # # "1 - Raise to $10.10"             "2 - Raise to $9.00"             
- # # "3 - Leave it as is"              "5 - Not sure/no opinion"        
- # # "6 - Would not answer "          
+maindf$sp02Rec[which(maindf$sp02Rec %in% c("6 - Would not answer ", "5 - Not sure/no opinion"))] <- NA
+maindf$sp02Rec[which(maindf$sp02Rec %in% "0 - Higher than $10.10")] <- "Higher than $10.10"
+maindf$sp02Rec[which(maindf$sp02Rec %in% "1 - Raise to $10.10")] <- "Raise it to $10.10"
+maindf$sp02Rec[which(maindf$sp02Rec %in% "2 - Raise to $9.00")] <- "Raise it to $9.00"
+maindf$sp02Rec[which(maindf$sp02Rec %in% "3 - Leave it as is")] <- "Leave it as is"
+maindf$sp02Rec[which(maindf$sp02Rec %in% " 4 - Eliminate the minimum wage")] <- "Eliminate the Minimum Wage"
 
 
-
-# maindf$sp02Rec[which(maindf$sp02Rec %in% c('', " "))] <- NA
-# maindf$sp02Rec <- factor(maindf$sp02Rec) #eliminate the extra levels
-# levels(maindf$sp02Rec)
-
-
-# # recode sp02.2
-# maindf$sp02.2Rec <- maindf$sp02.2
+ # " 4 - Eliminate the minimum wage" "0 - Higher than $10.10"         
+ # "1 - Raise to $10.10"             "2 - Raise to $9.00"             
+ # "3 - Leave it as is"              "5 - Not sure/no opinion"        
+ # "6 - Would not answer "          
 
 
-# #I decided to separate the final output of the titles from the variable inputs in the recoded function, as 
-# passopt <- "Pass the Paycheck Fairness Act"
-# noneedopt <- "No, a Federal Law is Not Needed"
-# noprobopt <- "No Problems with Gender Equity"
 
-# levels(maindf$sp02.2Rec) <- c(levels(maindf$sp02.2Rec), passopt, noneedopt, noprobopt)
-# maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("3 - Not sure/no opinion", " 4 - Wouldn't answer "))] <- NA 
-# maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("0 - Yes- pass the Paycheck Fairness Act"))] <- passopt
-# maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("1 - No- a federal law is not needed"))] <- noneedopt
-# maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("2 -No- there are no problems with gender equity"))] <-  noprobopt
+maindf$sp02Rec[which(maindf$sp02Rec %in% c('', " "))] <- NA
+maindf$sp02Rec <- factor(maindf$sp02Rec) #eliminate the extra levels
+levels(maindf$sp02Rec)
 
 
+# recode sp02.2
+maindf$sp02.2Rec <- maindf$sp02.2
+
+
+#I decided to separate the final output of the titles from the variable inputs in the recoded function, as 
+passopt <- "Pass the Paycheck Fairness Act"
+noneedopt <- "No, a Federal Law is Not Needed"
+noprobopt <- "No Problems with Gender Equity"
+
+levels(maindf$sp02.2Rec) <- c(levels(maindf$sp02.2Rec), passopt, noneedopt, noprobopt)
+maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("3 - Not sure/no opinion", " 4 - Wouldn't answer "))] <- NA 
+maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("0 - Yes- pass the Paycheck Fairness Act"))] <- passopt
+maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("1 - No- a federal law is not needed"))] <- noneedopt
+maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("2 -No- there are no problems with gender equity"))] <-  noprobopt
 
 
 
@@ -192,48 +190,57 @@ library(glmnet)
 
 
 
-# #Recode sp03
-# # specificrecode <- function(varRec){
-# # #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
-
-# # levels(varRec) <- c(levels(varRec), "Supports Wakefield",  "Undecided","Supports Jenkins") #add the new values as categories
-
-# # #Recode level
-# # varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
-# # varRec[which(varRec %in% c("1 - Supports Lynn", "2", "3", "4"))] <- "Supports Jenkins"
-# # varRec[which(varRec %in% "5")] <- "Undecided"
-# # varRec[which(varRec %in% c("6", "7","8","9", "10 - Supports Margie"))] <- "Supports Wakefield"
-
-# # rts <- factor(varRec)
-
-# # return(rts)
-
-# # }
-
-# # specificrecode2 <- function(varRec){
-# # #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
-
-# # levels(varRec) <- c(levels(varRec),'10', '1','0') #add the new values as categories
-
-# # #Recode level
-# # varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
-# # varRec[which(varRec %in% c("1 - Supports Lynn"))] <- "1"
-
-# # varRec[which(varRec %in% c("10 - Supports Margie"))] <- "10"
 
 
+#Recode sp03
+# specificrecode <- function(varRec){
+# #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
 
-# # # varRec[which(varRec %in% c('1','2','3','4','5'))] <- '0'
-# # # varRec[which(varRec %in% c('6','7','8','9','10'))] <- '1'
+# levels(varRec) <- c(levels(varRec), "Supports Wakefield",  "Undecided","Supports Jenkins") #add the new values as categories
 
- # # rts <- as.numeric(as.character((varRec)))
+# #Recode level
+# varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
+# varRec[which(varRec %in% c("1 - Supports Lynn", "2", "3", "4"))] <- "Supports Jenkins"
+# varRec[which(varRec %in% "5")] <- "Undecided"
+# varRec[which(varRec %in% c("6", "7","8","9", "10 - Supports Margie"))] <- "Supports Wakefield"
 
-# # return(rts)
+# rts <- factor(varRec)
 
-# # }
+# return(rts)
+
+# }
+
+# specificrecode2 <- function(varRec){
+# #This function will take our special field variables and return them as recoded in the specific manner described below. Please note that for this function, the levels have to be exactly the same, so 
+
+# levels(varRec) <- c(levels(varRec),'10', '1','0') #add the new values as categories
+
+# #Recode level
+# varRec[which(varRec %in% c('', " 0 - Decline to answer ", " 0 - Decline to answer  " ))] <- NA
+# varRec[which(varRec %in% c("1 - Supports Lynn"))] <- "1"
+
+# varRec[which(varRec %in% c("10 - Supports Margie"))] <- "10"
 
 
 
+# # varRec[which(varRec %in% c('1','2','3','4','5'))] <- '0'
+# # varRec[which(varRec %in% c('6','7','8','9','10'))] <- '1'
+
+ # rts <- as.numeric(as.character((varRec)))
+
+# return(rts)
+
+# }
+
+coltohist <- 'sp02'
+histvar <- maindf[, coltohist]
+questno <- as.numeric(substr(coltohist,3,4)) - 1
+histtitle <- paste('Histogram of question', questno) 
+xtitler <- paste('Response to question', questno)
+hist( as.numeric( strtrim(histvar[which(!histvar %in% c('', ' '))], 2)), main = histtitle, xlab = xtitler)
+
+# # 
+# hist(maindf$sp04)
 
 
 # binRec <- function(varRec, lvlsToZero, lvlsToOne, lvlsToNa){
