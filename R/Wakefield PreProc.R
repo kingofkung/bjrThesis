@@ -232,12 +232,14 @@ maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("2 -No- there are no problems wit
 
 # }
 
-coltohist <- 'sp02'
+coltohist <- 'sp03'
 histvar <- maindf[, coltohist]
 questno <- as.numeric(substr(coltohist,3,4)) - 1
 histtitle <- paste('Histogram of question', questno) 
 xtitler <- paste('Response to question', questno)
-hist( as.numeric( strtrim(histvar[which(!histvar %in% c('', ' '))], 2)), main = histtitle, xlab = xtitler)
+
+histdat <- as.numeric( strtrim(histvar[which(!histvar %in% c('', ' '))], 2))
+hist(histdat, main = histtitle, xlab = xtitler)
 
 # # 
 # hist(maindf$sp04)

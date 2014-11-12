@@ -345,6 +345,14 @@ adatrainer <-  train(x = xdata, y = ydata, method = 'ada')
 
 maindf2$sp08fac <- factor(maindf2$sp08)
 adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
+summary(adatest)
+adatest$trees
+
+junkerpredsmaind <-  predict(adatest, newdata = maindf2)
+junkerpredscont <-  predict(adatest, newdata = controldf2)
+
+critergen(junkerpreds$class, maindf2$sp08)
+
 
 aday <- ydata
 # aday[sample(1:length(aday),10)] <- NA #add an NA
