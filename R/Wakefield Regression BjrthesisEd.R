@@ -10,11 +10,12 @@ ptr <- proc.time()
 
 # function section
 
-critergen <- function( predicted, measured, fulltabl = FALSE ) {#Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.
-#inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
-predictedRes <- ifelse(predicted >= .5, 1,0)   
-
-if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
+##' Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.
+##' inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
+critergen <- function( predicted, measured, fulltabl = FALSE ) {
+	predictedRes <- ifelse(predicted >= .5, 1,0)   
+	
+	if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
 }
 
 
@@ -44,6 +45,7 @@ library(mice)
 library(mgcv) 
 library(randomForest)
 library(rpart) 
+
  
 maindf2 <-  readRDS('maindf2.rds')
 str(maindf2)
@@ -348,6 +350,28 @@ head(maindf)
 prop.table(table( ydata == predict(adatest, newdata = data.frame(xdata))))
 prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxdata))))
 
+
+#implement forward and backward subset selection
+
+regforss <- lm(sp08 ~ . , maindf2) #create regression for determining which variables are NA when left in the model
+colnamestouse <- names(coef(regforss)[!is.na(coef(regforss))])[-1] #get the column names that are left in, making sure to leave out the intercept
+subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
+
+
+forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, really.big = T) #perform forward subset selection on subseldf, using the
+coef(forsubsel, 10)
+
+plot(forsubsel, scale = 'adjr2')
+
+backsubsel <- regsubsets(sp08 ~ ., data =  subseldf, method = 'backward') #run subsets regression
+summary(backsubsel)$rsq
+summary(backsubsel)$which
+
+names(!is.na(coef(lm(sp08 ~ . , maindf2))))
+
+stepwiseR <-  step(object = 'glm', sp08 ~ ., direction = 'forward')
+
+ #put this in as column names for xdata
 
 # teedat <-  data.frame(y =c(1,1,1,1), x1 = c(1,1,1,1), x2 = c(0,0,0,1))
 
