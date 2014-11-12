@@ -344,7 +344,21 @@ is.matrix(xdata)
 adatrainer <-  train(x = xdata, y = ydata, method = 'ada')
 
 maindf2$sp08fac <- factor(maindf2$sp08)
-adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
+controldf2$sp08fac <- factor(controldf2$sp08)
+
+adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2[, !colnames(maindf2)%in% c('sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of
+summary(adatest)
+
+sort( adatest$importance, T)
+
+junkerpredsmaind <-  predict(adatest, newdata = maindf2)
+junkerpredscont <-  predict(adatest, newdata = controldf2)
+
+
+
+critergen(junkerpredsmaind$class, maindf2$sp08)
+critergen(junkerpredscont$class, controldf2$sp08)
+
 
 aday <- ydata
 # aday[sample(1:length(aday),10)] <- NA #add an NA
