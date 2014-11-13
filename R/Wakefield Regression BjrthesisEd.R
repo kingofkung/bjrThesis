@@ -93,7 +93,10 @@ set.seed(12345)
 tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 
 controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
-maindf2 <- maindf2[-tenperc$Fold06,]
+truecont <- maindf2[tenperc$Fold04,]
+
+maindf2 <- maindf2[-c(tenperc$Fold06, tenperc$Fold04),]
+
 
 rownames(maindf2[tenperc$Fold10,])
 
@@ -301,6 +304,8 @@ alpha = aldf$al[ which(aldf$err.min == min(aldf$err.min))], #Perform the elastic
 lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))] # and its corresponding lambda value
 ) 
 
+coef(bestnet)
+
 netpreds <- predict(bestnet, newx = xdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
 # netpredsRes <- ifelse(netpreds >= .5, 1,0)
 
@@ -341,23 +346,24 @@ prop.table(table(controldf2$sp08 == as.numeric(as.character( predict(besttreetes
 is.matrix(xdata)
 
 #Work on putting together adaboost
-adatrainer <-  train(x = xdata, y = ydata, method = 'ada')
+adatrainer <-  train(x = xdata, y = ydata, method = 'boosting')
 
 maindf2$sp08fac <- factor(maindf2$sp08)
 controldf2$sp08fac <- factor(controldf2$sp08)
 
-adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2[, !colnames(maindf2)%in% c('sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of
+adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2[, !colnames(maindf2) %in% c('sp08', 'Voter.choice.of.sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
 summary(adatest)
+
+maindf2$sp08fac <- NULL
 
 sort( adatest$importance, T)
 
-junkerpredsmaind <-  predict(adatest, newdata = maindf2)
-junkerpredscont <-  predict(adatest, newdata = controldf2)
+#Generate predictions for ada on main and control data frames
+adapredsmain <-  predict(adatest, newdata = maindf2)
+adapredscont <-  predict(adatest, newdata = controldf2)
 
-
-
-critergen(junkerpredsmaind$class, maindf2$sp08)
-critergen(junkerpredscont$class, controldf2$sp08)
+critergen(adapredsmain$class, maindf2$sp08)
+critergen(adapredscont$class, controldf2$sp08)
 
 
 aday <- ydata
@@ -431,7 +437,7 @@ for(L in 1:1) { #begin DV loop
 	#chose columns for our sample
 	numsforsample <- 1:ncol(maindf2)
 	
-	initlooplength <-  ncol(maindf2) - length( colsnottouse)
+	initlooplength <-  ncol(maindf2[,!colnames(maindf2) %in% colsnottouse]) 
 	
 	# colnames(maindf2)
 	
@@ -599,7 +605,7 @@ for(L in 1:1) { #begin DV loop
 		 IVcols <-  which(colnames(maindf2) %in% priorIVs) #get numbers of columns that have been used so far
 		
 		
-		
+		# browser()
 		 colnumstouse <- colnumstouse[ !colnumstouse %in% IVcols] #get rid of the columns used previously by taking them out of colnums to use. 
 		 
 		 if(iloopbreaker == 0) break #if I loopbreaker is 0, break out of the iv loop and move onto the next dv
@@ -631,27 +637,27 @@ for(L in 1:1) { #begin DV loop
 	
 	
 	#create titles for our new variables, and add them to maindf2
-	predtitler <- paste('Scoring on ', deev, sep = '') #title deevpreds for our export
-	rectitler <- paste('Voter choice of ',deev, sep = '')
-	# data.frame(c(names(deevpreds)), c( rownames(maindf2)))
-	maindf2 <-  cbind(maindf2,  deevpreds)
-	controldf2 <- cbind(controldf2, contpreds)
+	# predtitler <- paste('Scoring on ', deev, sep = '') #title deevpreds for our export
+	# rectitler <- paste('Voter choice of ',deev, sep = '')
+	# # data.frame(c(names(deevpreds)), c( rownames(maindf2)))
+	# maindf2 <-  cbind(maindf2,  deevpreds)
+	# controldf2 <- cbind(controldf2, contpreds)
 	# Vandat <- cbind(Vandat, 'torep' = finpreds)
 	
-	colnames(maindf2)[colnames(maindf2) == 'deevdiv'] <- rectitler
-	colnames(maindf2)[colnames(maindf2) == 'deevpreds'] <- predtitler
-	colnames(controldf2)[colnames(controldf2) == 'deevdiv'] <- rectitler
-	colnames(controldf2)[colnames(controldf2) == 'contpreds'] <- predtitler
+	# colnames(maindf2)[colnames(maindf2) == 'deevdiv'] <- rectitler
+	# colnames(maindf2)[colnames(maindf2) == 'deevpreds'] <- predtitler
+	# colnames(controldf2)[colnames(controldf2) == 'deevdiv'] <- rectitler
+	# colnames(controldf2)[colnames(controldf2) == 'contpreds'] <- predtitler
 	
 	# colnames(Vandat)[colnames(Vandat) == 'torep'] <- predtitler
 	
 	#Fix our predictions to the scale of the original queries
 	
-	 maindf2[, rectitler] <- round(maindf2[,rectitler], 2) #
-	 maindf2[, predtitler] <- round(maindf2[,predtitler]*100, 5)
+	 # maindf2[, rectitler] <- round(maindf2[,rectitler], 2) #
+	 # maindf2[, predtitler] <- round(maindf2[,predtitler]*100, 5)
 	
-	 controldf2[, rectitler] <- round(controldf2[, rectitler], 2)
-	 controldf2[, predtitler] <- round(controldf2[, predtitler] *100, 5)
+	 # controldf2[, rectitler] <- round(controldf2[, rectitler], 2)
+	 # controldf2[, predtitler] <- round(controldf2[, predtitler] *100, 5)
 	
 	
 	# Vandat[, predtitler] <- round(Vandat[, predtitler] *100, 2)
@@ -665,10 +671,9 @@ for(L in 1:1) { #begin DV loop
 	 if(L == 1) bestRegST <- bestReg else bestRegST <- c(bestRegST, bestReg)
 	
 	#Clean up before next iteration
-	
-	rm( deev, colnumstouse, bestRtPredRat)
+	# rm( deev, colnumstouse, bestRtPredRat)
 	} # End DV Loop
-	
+
 	
 Rprof(NULL)
 	
@@ -690,7 +695,8 @@ prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))
 
 #Begin looking at test set
 	
-critergen(predict(bestReg, controldf2, 'response'), controldf2$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
+critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
+
 
 critergen(lassopredsCont, controldf2$sp08, fulltabl = T) #table of Lasso's predictions on test set.
 
@@ -708,3 +714,9 @@ prop.table(table( controldf2$sp08 == predict(adatestwmissing, newdata = data.fra
 	
 	# system('say Done!')
 #So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
+
+bestRegup <-  update( bestReg, . ~ . + Party)
+
+critergen(predict(bestRegup, controldf2, 'response'), controldf2$sp08)
+
+
