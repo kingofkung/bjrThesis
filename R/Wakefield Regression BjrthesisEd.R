@@ -46,6 +46,7 @@ library(mgcv)
 library(randomForest)
 library(rpart) 
 library(adabag)
+library(ada)
 
  
 maindf2 <-  readRDS('maindf2.rds')
@@ -95,10 +96,13 @@ tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
 truecont <- maindf2[tenperc$Fold04,]
 
+maincontdf2 <- maindf2[-c(tenperc$Fold04),]
+
 maindf2 <- maindf2[-c(tenperc$Fold06, tenperc$Fold04),]
 
-
-rownames(maindf2[tenperc$Fold10,])
+contrasts( maincontdf2$Party)
+contrasts( truecont$Party)
+# rownames(maindf2[tenperc$Fold10,])
 
 
 # junkermod <-  glm(sp03 ~. , family ='binomial',  data = maindf2)
@@ -216,7 +220,14 @@ colnames(maindf2)
  # complete(mickey)[, !colnames(complete(mickey)) %in% c('sp03', 'sp04', 'sp05', 'sp06', 'sp08')]
 
 # mousesample <- sample(1:nrow(complete(mickey)), 9 * nrow(complete(mickey))/10)
-xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 -reg_earliest_month - cons_childcnt- others_num_female, data = maindf2)
+
+#construct dataframes for prediction and comparison
+xdata <- 	model.matrix(sp08 ~ . - sp04 - sp05 - sp06 - sp03 - reg_earliest_month - cons_childcnt - others_num_female, data = maincontdf2)
+newxdata <- model.matrix(sp08 ~ . - sp04 - sp05 - sp06 - sp03 - reg_earliest_month - cons_childcnt - others_num_female, data = truecont) #change it so that all predictions are made on truecont
+data.frame( colnames(xdata), colnames(newxdata))
+ydata <- maincontdf2[,'sp08']
+
+
 # colnames(xdat) 
 # length( xdat)
 # str(xdata) #why do 130 rows seem to just disappear? Identical values elsewhere? No. There were still some NAs in our data
@@ -225,7 +236,6 @@ xdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 -reg_earliest_month - c
 
 #Until we've got a perfect xdat, we'll need to make certain x and y data line up. We can do this by
 # ydata <- complete(mickey)$sp08[ 	-which( is.na(complete(mickey)) == T, arr.ind = T)[,1]]
-ydata <- maindf2[,'sp08']
 # grid <- 10^seq(10, -2, length = 100) #borrowing this directly from islr
 # testglmnet <-  glmnet( 
 # x = xdata,
@@ -268,7 +278,7 @@ nrow(nonzerocoefsfr) - 1 #according to Zou Hastie, and Tibshirani (2007) The num
 blpreds <-  predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response' )
 #Craft PCP Function
 
-critergen(blpreds, maindf2[,'sp08'], fulltabl = T)
+critergen(blpreds, maincontdf2[,'sp08'], fulltabl = T)
 
 # cbind(blpreds, ydata)
 # ydatpred <-  ifelse(blpreds > 0.5, 1, 0)
@@ -276,8 +286,6 @@ critergen(blpreds, maindf2[,'sp08'], fulltabl = T)
 # length(ydatpred)
 # prop.table(table(ydatpred ==  maindf2[,'sp08'], exclude = NULL))
 
-newxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = controldf2)
-colnames(newxdata)
 lassopreds <- predict(bestlasso, newx = xdata, lambda = cvtest$lambda.min, type = 'response')
 lassopredsCont <- predict(bestlasso, newx = newxdata, lambda = cvtest$lambda.min, type = 'response')
 
@@ -331,12 +339,12 @@ forestpredsCont <-  predict(treetest, newxdata)
 # print(traintreetest) #suggests best value for mtry is 102
 # incxdata <- model.matrix(sp08 ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, maindf[,!colnames(maindf) %in% varsToNotInclude])
 
-randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08), na.action = na.exclude) #NA Not permitted in predictors
+# randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08), na.action = na.exclude) #NA Not permitted in predictors
 
 besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 plot(besttreetest)
-prop.table(table(ydata == besttreetest$predicted))
-prop.table(table(controldf2$sp08 == as.numeric(as.character( predict(besttreetest,newxdata))) ))
+prop.table(table(ydata == as.numeric(as.character( besttreetest$predicted))))
+prop.table(table(factor(truecont$sp08) == predict(besttreetest, newxdata, 'response')))
 
 # implement k-nearest neighbor classification. It does horribly
 # knntest <-  train(x = xdata, y = ydata, method = 'knn')
@@ -346,24 +354,24 @@ prop.table(table(controldf2$sp08 == as.numeric(as.character( predict(besttreetes
 is.matrix(xdata)
 
 #Work on putting together adaboost
-adatrainer <-  train(x = xdata, y = ydata, method = 'boosting')
+# adatrainer <-  train(x = xdata, y = ydata, method = 'boosting')
 
-maindf2$sp08fac <- factor(maindf2$sp08)
-controldf2$sp08fac <- factor(controldf2$sp08)
+maincontdf2$sp08fac <- factor(maincontdf2$sp08)
+truecont$sp08fac <- factor(truecont$sp08)
 
-adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maindf2[, !colnames(maindf2) %in% c('sp08', 'Voter.choice.of.sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
+adatest <-  boosting(sp08fac ~ . - sp04 - sp05 -sp06 -sp03 - reg_earliest_month - cons_childcnt- others_num_female, data = maincontdf2[, !colnames(maincontdf2) %in% c('sp08', 'Voter.choice.of.sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
 summary(adatest)
 
-maindf2$sp08fac <- NULL
 
 sort( adatest$importance, T)
 
 #Generate predictions for ada on main and control data frames
-adapredsmain <-  predict(adatest, newdata = maindf2)
-adapredscont <-  predict(adatest, newdata = controldf2)
+adapredsmain <-  predict(adatest, newdata = maincontdf2)
+adapredscont <-  predict(adatest, newdata = truecont)
 
-critergen(adapredsmain$class, maindf2$sp08)
-critergen(adapredscont$class, controldf2$sp08)
+critergen(adapredsmain$class, maincontdf2$sp08)
+critergen(adapredscont$class, truecont$sp08)
+maincontdf2$sp08fac <- NULL
 
 
 aday <- ydata
@@ -379,7 +387,7 @@ head(maindf)
 
 #get data for ada with full imputed
 prop.table(table( ydata == predict(adatest, newdata = data.frame(xdata)))) # ada with imputed on the training set
-prop.table(table( controldf2$sp08 == predict(adatest, newdata = data.frame(newxdata))))  # ada with imputed on the test set
+prop.table(table( truecont$sp08 == predict(adatest, newdata = data.frame(newxdata))))  # ada with imputed on the test set
 
 #get data for ada with some missing values
 prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
@@ -388,12 +396,12 @@ prop.table(table( controldf2$sp08 == predict(adatestwmissing, newdata = data.fra
 
 #implement forward and backward subset selection
 
-regforss <- lm(sp08 ~ . , maindf2) #create regression for determining which variables are NA when left in the model
+regforss <- lm(sp08 ~ . , maincontdf2) #create regression for determining which variables are NA when left in the model
 colnamestouse <- names(coef(regforss)[!is.na(coef(regforss))])[-1] #get the column names that are left in, making sure to leave out the intercept
 write.table(colnamestouse, '/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
 
 # colnamestouse <- read.table('/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
-subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse$x]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
+subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
 
 
 forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, method = 'forward') #perform forward subset selection on subseldf, using the
@@ -407,7 +415,7 @@ summary(backsubsel)$which
 
 names(!is.na(coef(lm(sp08 ~ . , maindf2))))
 
-stepwiseR <-  step(object = 'glm', sp08 ~ ., direction = 'forward')
+# stepwiseR <-  step(object = 'glm', sp08 ~ ., direction = 'forward')
 
  #put this in as column names for xdata
 
@@ -681,13 +689,13 @@ summaryRprof('bensprof.txt')
 	
 critergen(predict(bestReg, maindf2, 'response'), maindf2$sp08, fulltabl = T) #true % of BeSiVa's Predictions on training set
 
-critergen( lassopreds, maindf2$sp08, fulltabl = T) #table of Lasso's predictions on training set.
+critergen( lassopreds, maincontdf2$sp08, fulltabl = T) #table of Lasso's predictions on training set.
 
-critergen(netpreds, maindf2$sp08, fulltabl = T) #table of elastic net's predictions on training set
+critergen(netpreds, maincontdf2$sp08, fulltabl = T) #table of elastic net's predictions on training set
 
-critergen(as.numeric(as.character(treetest$predicted)), maindf2$sp08, fulltabl = T)
+critergen(as.numeric(as.character(treetest$predicted)), maincontdf2$sp08, fulltabl = T)
 
-critergen(as.numeric(as.character(predict(adatest, newdata = data.frame(xdata)))), maindf2$sp08, fulltabl = T)
+critergen(as.numeric(adapredsmain$class), maincontdf2$sp08, fulltabl = T)
 
 prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
 
@@ -698,15 +706,15 @@ prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))
 critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
 
 
-critergen(lassopredsCont, controldf2$sp08, fulltabl = T) #table of Lasso's predictions on test set.
+critergen(lassopredsCont, truecont$sp08, fulltabl = T) #table of Lasso's predictions on test set.
 
-critergen(netpredsCont, controldf2$sp08, fulltabl = T) #table of elastic net's predictions on test set
+critergen(netpredsCont, truecont$sp08, fulltabl = T) #table of elastic net's predictions on test set
 
-critergen(as.numeric(as.character(forestpredsCont)), controldf2$sp08, fulltabl = T) #random forest on test set predictions
+critergen(as.numeric(as.character(forestpredsCont)), truecont$sp08, fulltabl = T) #random forest on test set predictions
 
-critergen(as.numeric(as.character(predict(adatest, newdata = data.frame(newxdata)))), controldf2$sp08, fulltabl = T)# ada with imputed data on test set
+critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = T)# ada with imputed data on test set
 
-prop.table(table( controldf2$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
+prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
 
 
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
@@ -715,8 +723,8 @@ prop.table(table( controldf2$sp08 == predict(adatestwmissing, newdata = data.fra
 	# system('say Done!')
 #So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
 
-bestRegup <-  update( bestReg, . ~ . + Party)
+# bestRegup <-  update( bestReg, . ~ . + Party)
 
-critergen(predict(bestRegup, controldf2, 'response'), controldf2$sp08)
+# critergen(predict(bestRegup, truecont$sp08, 'response'), controldf2$sp08)
 
 
