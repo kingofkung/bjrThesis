@@ -385,13 +385,10 @@ adatestwmissing <-  ada(x = adax, y = aday) #interestingly, ada can handle missi
 
 head(maindf)
 
-#get data for ada with full imputed
-prop.table(table( ydata == predict(adatest, newdata = data.frame(xdata)))) # ada with imputed on the training set
-prop.table(table( truecont$sp08 == predict(adatest, newdata = data.frame(newxdata))))  # ada with imputed on the test set
 
-#get data for ada with some missing values
+#get data for ada with missing values with some missing values
 prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
-prop.table(table( controldf2$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata))))# ada with missings on test set
+prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata))))# ada with missings on test set
 
 
 #implement forward and backward subset selection
