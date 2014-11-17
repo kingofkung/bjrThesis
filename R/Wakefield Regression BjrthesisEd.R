@@ -3,6 +3,23 @@
 # Started 4/9/2014
 # Last Edited 10/22/2014
  
+ 
+#Load relevant packages
+
+library(car)
+library(xlsx)
+library(gdata)
+library(rockchalk)
+library(caret) #loads ggplot2
+library(leaps)
+library(glmnet)
+library(mice)
+library(mgcv) 
+library(randomForest)
+library(rpart) 
+library(adabag)
+library(ada)
+ 
 
 rm(list = ls())
 ptr <- proc.time()
@@ -32,21 +49,6 @@ maindf <-  readRDS('maindf.RDS')
 Vandat <- readRDS('Vandat.RDS')
 
 
-#Load relevant packages
-
-library(car)
-library(xlsx)
-library(gdata)
-library(rockchalk)
-library(caret) #loads ggplot2
-library(leaps)
-library(glmnet)
-library(mice)
-library(mgcv) 
-library(randomForest)
-library(rpart) 
-library(adabag)
-library(ada)
 
  
 maindf2 <-  readRDS('maindf2.rds')
@@ -91,7 +93,14 @@ maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(m
 
 # pull out a tenth of the data for control purposes
 # set.seed(12345)
-set.seed(123456789)
+
+#begin working on iterating data for purpose of presentation
+
+randseeds <-  abs(round( rnorm(2)*10000)) #create random numbers to seed #Obvious, but all values can be made postitive using the abs() command 
+
+# for( i in randseeds ) { 
+# print( paste('seed =',i))	
+# set.seed(i)
 tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 
 controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
@@ -375,14 +384,14 @@ critergen(adapredscont$class, truecont$sp08)
 maincontdf2$sp08fac <- NULL
 
 
-aday <- ydata
-# aday[sample(1:length(aday),10)] <- NA #add an NA
-adax <- xdata
-adax[sample(1:nrow(adax), size = 10), sample(1:ncol(adax), size = 10)] <- NA #add random set of missings to data
-# which( is.na(adax)) #make sure they're added. And they are
+# aday <- ydata
+# # aday[sample(1:length(aday),10)] <- NA #add an NA
+# adax <- xdata
+# adax[sample(1:nrow(adax), size = 10), sample(1:ncol(adax), size = 10)] <- NA #add random set of missings to data
+# # which( is.na(adax)) #make sure they're added. And they are
 
 
-adatestwmissing <-  ada(x = adax, y = aday) #interestingly, ada can handle missing data in the x, but not in the y value
+# adatestwmissing <-  ada(x = adax, y = aday) #interestingly, ada can handle missing data in the x, but not in the y value
 
 head(maindf)
 
@@ -680,44 +689,49 @@ for(L in 1:1) { #begin DV loop
 	# rm( deev, colnumstouse, bestRtPredRat)
 	} # End DV Loop
 
-	
+masterregST <- 	c(masterregST, coef(bestRegST)[-1])
 Rprof(NULL)
 	
 summaryRprof('bensprof.txt')
-	
-critergen(predict(bestReg, maindf2, 'response'), maindf2$sp08, fulltabl = T) #true % of BeSiVa's Predictions on training set
+#change to 	
+brCritTrain <-  critergen(predict(bestReg, maindf2, 'response'), maindf2$sp08, fulltabl = F) #true % of BeSiVa's Predictions on training set
 
-critergen( lassopreds, maincontdf2$sp08, fulltabl = T) #table of Lasso's predictions on training set.
+lassCritTrain <- critergen( lassopreds, maincontdf2$sp08, fulltabl = F) #table of Lasso's predictions on training set.
 
-critergen(netpreds, maincontdf2$sp08, fulltabl = T) #table of elastic net's predictions on training set
+netCritTrain <-  critergen(netpreds, maincontdf2$sp08, fulltabl = F) #table of elastic net's predictions on training set
 
-critergen(as.numeric(as.character(treetest$predicted)), maincontdf2$sp08, fulltabl = T)
+rfCritTrain <-  critergen(as.numeric(as.character(treetest$predicted)), maincontdf2$sp08, fulltabl = F)
 
-critergen(as.numeric(adapredsmain$class), maincontdf2$sp08, fulltabl = T)
+adaCritTrain <-  critergen(as.numeric(adapredsmain$class), maincontdf2$sp08, fulltabl = F)
 
-prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
+# prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
 
 
 
 #Begin looking at test set
 	
-critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = T) #table of BeSiVa's Predictions on test set. 
+brCritTest <- critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = F) #table of BeSiVa's Predictions on test set. 
 
 
-critergen(lassopredsCont, truecont$sp08, fulltabl = T) #table of Lasso's predictions on test set.
+lassCritTest <-critergen(lassopredsCont, truecont$sp08, fulltabl = F) #table of Lasso's predictions on test set.
 
-critergen(netpredsCont, truecont$sp08, fulltabl = T) #table of elastic net's predictions on test set
+netCritTest <- critergen(netpredsCont, truecont$sp08, fulltabl = F) #table of elastic net's predictions on test set
 
-critergen(as.numeric(as.character(forestpredsCont)), truecont$sp08, fulltabl = T) #random forest on test set predictions
+rfCritTest <- critergen(as.numeric(as.character(forestpredsCont)), truecont$sp08, fulltabl = F) #random forest on test set predictions
 
-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = T)# ada with imputed data on test set
+adaCritTest <-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = F)# ada with imputed data on test set
 
-prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
+# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
 
-
+PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain))
+PCPdfTest <- data.frame( Test = c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest))
+rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+rownames(PCPdfTest) <- rownames(PCPdfTr)
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
-	
+write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
+write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
+write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
 	# system('say Done!')
 #So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
 
@@ -725,4 +739,9 @@ prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame
 
 # critergen(predict(bestRegup, truecont$sp08, 'response'), controldf2$sp08)
 
+# for(i in 1:2){
+# set.seed(Sys.time())
+# masterregST <- {}
 
+# } #end random iteration loop
+system('say Done!')
