@@ -90,7 +90,8 @@ maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(m
 
 
 # pull out a tenth of the data for control purposes
-set.seed(12345)
+# set.seed(12345)
+set.seed(123456789)
 tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 
 controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
