@@ -24,86 +24,89 @@ library(ada)
 
 set.seed(2398745)
 
-	
-	
-	# function section
-	
-	##' Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.
-	##' inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
-	critergen <- function( predicted, measured, fulltabl = FALSE ) {
-		predictedRes <- ifelse(predicted >= .5, 1,0)   
-		
-		if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
-	}
-	
-	
-	#Go to correct file location.  
-	
-	inputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Input 2"
-	setwd(inputwd)
-	outputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Output 2/Wakefield Regression Outputs"
-	dateUnformed <-  date()
-	dateFormed <-  strsplit(dateUnformed, split = ' ')
-	dateFormed <- paste(dateFormed[[1]][c(2,4)], collapse = ' ')
-	
-	maindf <-  readRDS('maindf.RDS')
-	Vandat <- readRDS('Vandat.RDS')
-	
-	
-	
-	 
-	maindf2 <-  readRDS('maindf2.rds')
-	str(maindf2)
-	
-	ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
-	mickey <- readRDS(file = ifilename)
-	maindf2 <- complete(mickey)
-	
-	colnames(maindf2)
-	
-	# Preproc for maindf2
-	Agebreaks <- c(17, 30, 45, 64, 200)
-	Agelabels <- c('18-30', '31-45', '46-64', '65+')
-	maindf2$cat_age <- cut(maindf2$Age, breaks = Agebreaks , labels = Agelabels)
-	
-	maindf2$SpecVotes <- 0
-	maindf2[ which(maindf2$voted_08g %in% c(1) & maindf2$voted_12g %in% c(1)), 'SpecVotes'] <- 1
-	maindf2[maindf2$voted_10g %in% c(1), 'SpecVotes'] <- 0
-	
-	maindf2$TenDummy <- 0
-	maindf2[maindf2$voted_10g %in% c(1), 'TenDummy'] <- 1
-	
-	
-	
-	
-	# app
-	
-	
-	varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck', 'datelastcalled', 'datasource_name','agent_name', 'firstname', 'lastname', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt', 'others_num_female')
 
-	maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
+
+# function section
+
+##' Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.
+##' inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.
+critergen <- function( predicted, measured, fulltabl = FALSE ) {
+	predictedRes <- ifelse(predicted >= .5, 1,0)   
 	
-	maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, is.character)==T], as.factor)
-	head(maindf2)
-	
-	
-	# #See what happens when we move the data shift to before controldf2 is defined
-	possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
-	maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
-	
-	
-	# pull out a tenth of the data for control purposes
-	# set.seed(12345)
-	
-	#begin working on iterating data for purpose of presentation
-	
+	if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set
+}
+
+
+#Go to correct file location.  
+
+inputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Input 2"
+setwd(inputwd)
+outputwd <- "/Users/bjr/Google Drive/Activate/Wakefield Modelling Project/Wakefield Output 2/Wakefield Regression Outputs"
+dateUnformed <-  date()
+dateFormed <-  strsplit(dateUnformed, split = ' ')
+dateFormed <- paste(dateFormed[[1]][c(2,4)], collapse = ' ')
+
+maindf <-  readRDS('maindf.RDS')
+Vandat <- readRDS('Vandat.RDS')
+
+
+
+ 
+maindf2 <-  readRDS('maindf2.rds')
+str(maindf2)
+
+ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
+mickey <- readRDS(file = ifilename)
+maindf2 <- complete(mickey)
+
+colnames(maindf2)
+
+# Preproc for maindf2
+Agebreaks <- c(17, 30, 45, 64, 200)
+Agelabels <- c('18-30', '31-45', '46-64', '65+')
+maindf2$cat_age <- cut(maindf2$Age, breaks = Agebreaks , labels = Agelabels)
+
+maindf2$SpecVotes <- 0
+maindf2[ which(maindf2$voted_08g %in% c(1) & maindf2$voted_12g %in% c(1)), 'SpecVotes'] <- 1
+maindf2[maindf2$voted_10g %in% c(1), 'SpecVotes'] <- 0
+
+maindf2$TenDummy <- 0
+maindf2[maindf2$voted_10g %in% c(1), 'TenDummy'] <- 1
+
+
+
+
+# app
+
+
+varsToNotInclude <- c("prospectid", 'attemptcount', 'zipcode', 'county', 'voterid','VANID', 'Notes','PollingAddress', 'PollingLocation', 'PrecinctName', 'block_group', 'X2012.ClarityTurnout','Phone','PersonID', 'votebuilder_identifier', 'BoardOfEducationCode','namecheck', 'datelastcalled', 'datasource_name','agent_name', 'firstname', 'lastname', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt', 'others_num_female')
+
+maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
+
+maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, is.character)==T], as.factor)
+head(maindf2)
+
+
+# #See what happens when we move the data shift to before controldf2 is defined
+possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
+maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+maindfin <- maindf2
+
+# set.seed(12345)
+
+#begin working on iterating data for purpose of presentation
+
 
 for(u in 1:100){
 	ptr <- proc.time()
-	
+	maindf2$deevdiv <- NULL
 	# for( i in randseeds ) { 
 	# print( paste('seed =',i))	
 	# set.seed(i)
+	
+	maindf2 <- maindfin #If I don't do this, It'll shrink maindf2 until there's nothing left
+	
+	# pull out a tenth of the data for control purposes
 	tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 	
 	controldf2 <- maindf2[tenperc$Fold06,] #Order Matters: previously this data had not been fully recorded, as parts were cut out due to the redefininition of maindf2 in the line below
@@ -353,8 +356,8 @@ for(u in 1:100){
 	
 	besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 	plot(besttreetest)
-	prop.table(table(ydata == as.numeric(as.character( besttreetest$predicted))))
-	prop.table(table(factor(truecont$sp08) == predict(besttreetest, newxdata, 'response')))
+	# prop.table(table(ydata == as.numeric(as.character( besttreetest$predicted))))
+	# prop.table(table(factor(truecont$sp08) == predict(besttreetest, newxdata, 'response')))
 	
 	# implement k-nearest neighbor classification. It does horribly
 	# knntest <-  train(x = xdata, y = ydata, method = 'knn')
@@ -370,7 +373,7 @@ for(u in 1:100){
 	truecont$sp08fac <- factor(truecont$sp08)
 	
 	adatest <-  boosting(sp08fac ~ ., data = maincontdf2[, !colnames(maincontdf2) %in% c('sp08', 'Voter.choice.of.sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
-	summary(adatest)
+	print(summary(adatest))
 	
 	
 	sort( adatest$importance, T)
@@ -379,10 +382,10 @@ for(u in 1:100){
 	adapredsmain <-  predict(adatest, newdata = maincontdf2)
 	adapredscont <-  predict(adatest, newdata = truecont)
 	
-	critergen(adapredsmain$class, maincontdf2$sp08)
-	critergen(adapredscont$class, truecont$sp08)
+	# critergen(adapredsmain$class, maincontdf2$sp08)
+	# critergen(adapredscont$class, truecont$sp08)
 	maincontdf2$sp08fac <- NULL
-	
+	truecont$sp08fac <- NULL #just in case
 	
 	# aday <- ydata
 	# # aday[sample(1:length(aday),10)] <- NA #add an NA
@@ -393,7 +396,7 @@ for(u in 1:100){
 	
 	# adatestwmissing <-  ada(x = adax, y = aday) #interestingly, ada can handle missing data in the x, but not in the y value
 	
-	head(maindf)
+	# head(maindf)
 	
 	
 	#get data for ada with missing values with some missing values
@@ -401,27 +404,27 @@ for(u in 1:100){
 	# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata))))# ada with missings on test set
 	
 	
-	#implement forward and backward subset selection
+	##implement forward and backward subset selection
 	
-	regforss <- lm(sp08 ~ . , maincontdf2) #create regression for determining which variables are NA when left in the model
-	colnamestouse <- names(coef(regforss)[!is.na(coef(regforss))])[-1] #get the column names that are left in, making sure to leave out the intercept
-	write.table(colnamestouse, '/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
+	# regforss <- lm(sp08 ~ . , maincontdf2) #create regression for determining which variables are NA when left in the model
+	# colnamestouse <- names(coef(regforss)[!is.na(coef(regforss))])[-1] #get the column names that are left in, making sure to leave out the intercept
+	# write.table(colnamestouse, '/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
 	
-	# colnamestouse <- read.table('/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
-	subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
-	
-	
-	forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, method = 'forward') #perform forward subset selection on subseldf, using the
-	coef(forsubsel, 10)
+	# # colnamestouse <- read.table('/Users/bjr/GitHub/bjrThesis/R/sscolnamestouse.txt')
+	# subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]) #Turn the data into a form that regsubsets can work with, using the dv, all columns that can be left in model.frame, and the data.frame command so we're not working w/a matrix. 
 	
 	
-	plot(forsubsel, scale = 'adjr2')
+	# forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, method = 'forward') #perform forward subset selection on subseldf, using the
+	# coef(forsubsel, 10)
 	
-	backsubsel <- regsubsets(sp08 ~ ., data =  subseldf, method = 'backward') #run subsets regression
-	summary(backsubsel)$rsq
-	summary(backsubsel)$which
 	
-	names(!is.na(coef(lm(sp08 ~ . , maindf2))))
+	# plot(forsubsel, scale = 'adjr2')
+	
+	# backsubsel <- regsubsets(sp08 ~ ., data =  subseldf, method = 'backward') #run subsets regression
+	# summary(backsubsel)$rsq
+	# summary(backsubsel)$which
+	
+	# names(!is.na(coef(lm(sp08 ~ . , maindf2))))
 	
 	# stepwiseR <-  step(object = 'glm', sp08 ~ ., direction = 'forward')
 	
@@ -437,7 +440,7 @@ for(u in 1:100){
 	 
 	# age, gender party registration, county, and income, if we have it on everyone. 
 	
-	colnames(maindf2)
+	# colnames(maindf2)
 	
 	Rprof('bensprof.txt')
 	write.table('',file = '/Users/bjr/GitHub/bjrThesis/R/scores.csv', sep = ',', col.names = F, row.names = F) #clear scores table					
