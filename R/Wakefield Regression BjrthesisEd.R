@@ -20,8 +20,8 @@ library(rpart)
 library(adabag)
 library(ada)
  
-
-rm(list = ls())
+for(u in 1:3){
+rm(list = ls()[!ls() %in% 'u'])# Remove everything that's not the master iterator u
 ptr <- proc.time()
 
 
@@ -397,8 +397,8 @@ head(maindf)
 
 
 #get data for ada with missing values with some missing values
-prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
-prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata))))# ada with missings on test set
+# prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
+# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata))))# ada with missings on test set
 
 
 #implement forward and backward subset selection
@@ -689,7 +689,7 @@ for(L in 1:1) { #begin DV loop
 	# rm( deev, colnumstouse, bestRtPredRat)
 	} # End DV Loop
 
-masterregST <- 	c(masterregST, coef(bestRegST)[-1])
+# masterregST <- 	c(masterregST, coef(bestRegST)[-1])
 Rprof(NULL)
 	
 summaryRprof('bensprof.txt')
@@ -729,9 +729,18 @@ rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adabo
 rownames(PCPdfTest) <- rownames(PCPdfTr)
 # so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
+if(u == 1){
+write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
+write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = F, row.names = F, col.names = T)
+write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = F, row.names = F, col.names = F)
+
+} else {
+
 write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
 write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
 write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
+
+}
 	# system('say Done!')
 #So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
 
@@ -742,6 +751,6 @@ write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/Fi
 # for(i in 1:2){
 # set.seed(Sys.time())
 # masterregST <- {}
-
+}
 # } #end random iteration loop
 system('say Done!')
