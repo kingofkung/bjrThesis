@@ -20,7 +20,7 @@ library(rpart)
 library(adabag)
 library(ada)
  
-for(u in 1:3){
+for(u in 1:100){
 rm(list = ls()[!ls() %in% 'u'])# Remove everything that's not the master iterator u
 ptr <- proc.time()
 
@@ -413,6 +413,7 @@ subseldf <- data.frame(sp08 = ydata, xdata[, colnames(xdata) %in% colnamestouse]
 
 forsubsel <- regsubsets(sp08 ~ ., data =  subseldf, nvmax = 10, method = 'forward') #perform forward subset selection on subseldf, using the
 coef(forsubsel, 10)
+
 
 plot(forsubsel, scale = 'adjr2')
 

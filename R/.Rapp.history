@@ -1,0 +1,8 @@
+# function section#
+#
+##' Critergen is a function that when fully operational, will generate different criteria for how well data is predicted by different values.#
+##' inputs: the predictions made by the predict() function and the actual values measured as 1d arrays.#
+critergen <- function( predicted, measured, fulltabl = FALSE ) {#
+	predictedRes <- ifelse(predicted >= .5, 1,0)   #
+	if (fulltabl == TRUE) return( prop.table(table(predictedRes == measured, exclude = NULL))) else return( prop.table(table(predictedRes == measured, exclude = NULL))['TRUE']) #output: % true in table of elastic net's predictions on test set#
+}
