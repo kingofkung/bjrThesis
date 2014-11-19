@@ -366,7 +366,7 @@ for(u in 1:ulen){
 	
 	# randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08), na.action = na.exclude) #NA Not permitted in predictors
 	
-	besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
+	# besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
 	# plot(besttreetest)
 	# prop.table(table(ydata == as.numeric(as.character( besttreetest$predicted))))
 	# prop.table(table(factor(truecont$sp08) == predict(besttreetest, newxdata, 'response')))
