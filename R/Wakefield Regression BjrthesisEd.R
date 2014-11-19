@@ -94,12 +94,24 @@ maindfin <- maindf2
 
 # set.seed(12345)
 
+# length of storage matrices and master iterator
+
+ulen <- 25
+
+#Put together a matrix to store PCP values for test and training sets
+
+PCCTeststore <- matrix(NA, nrow = ulen, ncol = 5)
+PCCTrainstore <- matrix(NA, nrow = ulen, ncol = 5)
+
+colnames(PCCTeststore) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+colnames(PCCTrainstore)<- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+
 #begin working on iterating data for purpose of presentation
 
 
-for(u in 1:100){
+for(u in 1:ulen){
 	ptr <- proc.time()
-	maindf2$deevdiv <- NULL
+	
 	# for( i in randseeds ) { 
 	# print( paste('seed =',i))	
 	# set.seed(i)
@@ -276,8 +288,8 @@ for(u in 1:100){
 	library(glmnetcr) 
 	print(ifilename)
 
-	nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
-	print(nonzerocoefsfr)
+	# nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
+	# print(nonzerocoefsfr)
 	nrow(nonzerocoefsfr) - 1 #according to Zou Hastie, and Tibshirani (2007) The number of nonzero coefficients in the lasso is an unbiased estimator of the Effective Degrees of Freedom in the lasso. I wonder about the elastic net...
 	
 	# mickey.test <- complete(mickey)[-mousesample,]
@@ -325,7 +337,7 @@ for(u in 1:100){
 	lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))] # and its corresponding lambda value
 	) 
 	
-	coef(bestnet)
+	# coef(bestnet)
 	
 	netpreds <- predict(bestnet, newx = xdata, lambda = aldf$lam.min[ which(aldf$err.min == min(aldf$err.min))], type = 'response')
 	# netpredsRes <- ifelse(netpreds >= .5, 1,0)
@@ -343,7 +355,7 @@ for(u in 1:100){
 	print(treetest)
 	# imporder <- order(treetest$importance, decreasing = T)
 	# data.frame(rownames(treetest$importance)[imporder], MeanDecreaseGini= treetest$importance[imporder])
-	plot(treetest) # Plots error rates or MSE of the randomForest object
+	# plot(treetest) # Plots error rates or MSE of the randomForest object
 	prop.table(table(ydata == treetest$predicted))
 	
 	forestpredsCont <-  predict(treetest, newxdata)
@@ -355,7 +367,7 @@ for(u in 1:100){
 	# randomForest(x = maindf[,!colnames(maindf) %in% c('sp08', 'sp04', 'sp05', 'sp06', 'sp03', 'reg_earliest_month', 'cons_childcnt','others_num_female')], y = factor(maindf$sp08), na.action = na.exclude) #NA Not permitted in predictors
 	
 	besttreetest <-  randomForest(x = xdata, y = factor(ydata), ntree = 1500, mtry = 102) #Let's check that, shall we?
-	plot(besttreetest)
+	# plot(besttreetest)
 	# prop.table(table(ydata == as.numeric(as.character( besttreetest$predicted))))
 	# prop.table(table(factor(truecont$sp08) == predict(besttreetest, newxdata, 'response')))
 	
@@ -372,8 +384,8 @@ for(u in 1:100){
 	maincontdf2$sp08fac <- factor(maincontdf2$sp08)
 	truecont$sp08fac <- factor(truecont$sp08)
 	
-	adatest <-  boosting(sp08fac ~ ., data = maincontdf2[, !colnames(maincontdf2) %in% c('sp08', 'Voter.choice.of.sp08')]) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
-	print(summary(adatest))
+	adatest <-  boosting(sp08fac ~ ., data = maincontdf2[, !colnames(maincontdf2) %in% c('sp08', 'Voter.choice.of.sp08')], control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
+	# print(summary(adatest))
 	
 	
 	sort( adatest$importance, T)
@@ -735,18 +747,18 @@ for(u in 1:100){
 	rownames(PCPdfTest) <- rownames(PCPdfTr)
 	# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 	
-	if(u == 1){
-	write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
-	write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = F, row.names = F, col.names = T)
-	write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = F, row.names = F, col.names = F)
+	# if(u == 1){
+	# write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
+	# write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = F, row.names = F, col.names = T)
+	# # write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = F, row.names = F, col.names = F)
 	
-	} else {
+	# } else {
 	
-	write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
-	write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
-	write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
+	# write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
+	# write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
+	# # write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
 	
-	}
+	# }
 		# system('say Done!')
 	#So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
 	
@@ -754,9 +766,58 @@ for(u in 1:100){
 	
 	# critergen(predict(bestRegup, truecont$sp08, 'response'), controldf2$sp08)
 	
+
 	# for(i in 1:2){
 	# set.seed(Sys.time())
 	# masterregST <- {}
+
+brCritTest <- critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = F) #table of BeSiVa's Predictions on test set. 
+
+
+lassCritTest <-critergen(lassopredsCont, truecont$sp08, fulltabl = F) #table of Lasso's predictions on test set.
+
+netCritTest <- critergen(netpredsCont, truecont$sp08, fulltabl = F) #table of elastic net's predictions on test set
+
+rfCritTest <- critergen(as.numeric(as.character(forestpredsCont)), truecont$sp08, fulltabl = F) #random forest on test set predictions
+
+adaCritTest <-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = F)# ada with imputed data on test set
+
+# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
+
+PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain))
+PCPdfTest <- data.frame( Test = c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest))
+rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+rownames(PCPdfTest) <- rownames(PCPdfTr)
+# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
+
+if(u == 1){
+write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
+write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = F, row.names = F, col.names = T)
+write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = F, row.names = T, col.names = F)
+print('u ==1') #Double posts. This should only print once though.
+}
+
+if(u != 1) {
+
+write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
+write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
+write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
+}
+
+PCCTeststore[u,] <- c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest)
+PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain)
+
+	# system('say Done!')
+#So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
+
+# bestRegup <-  update( bestReg, . ~ . + Party)
+
+# critergen(predict(bestRegup, truecont$sp08, 'response'), controldf2$sp08)
+
+# for(i in 1:2){
+# set.seed(Sys.time())
+# masterregST <- {}
+
 }
 # } #end random iteration loop
 system('say Done!')
