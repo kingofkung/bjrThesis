@@ -823,10 +823,16 @@ PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, ad
 system('say Done!')
 
 PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1"])
-PCCLabels <- c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1', ulen))
-anova(lm(PCCvals ~ PCCLabels))
+PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1', ulen)))
 
 
+PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
+
+testreg <- lm(PCCvals ~ PCCLabels)
+# summary(testreg)
+anova(testreg)
+
+outreg(anova(testreg)) 
 
 
 
