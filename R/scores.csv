@@ -1,37 +1,19 @@
 ""
+"","(Intercept)","cen10_kids"
+"scores",1.61976618743965,-1.82611550153278
+"","(Intercept)","cons_dbi_finance_ira"
+"scores",-1.66323835356686,1.41464474136673
 "","(Intercept)","Party2","Party3"
-<<<<<<< Updated upstream
-"scores",9.33260774210224,-14.2106433663127,-5.80202938702395
-=======
-<<<<<<< Updated upstream
-"scores",10.0699254065232,-14.6005597146329,-6.19055214895286
+"scores",10.0888594217566,-14.287617328841,-6.5237614507731
+"","(Intercept)","Party2","Party3","cen10_kids"
+"scores",5.15357275186742,-14.2742866672027,-6.49693887529003,-1.735613299599
 "","(Intercept)","Party2","Party3","cen00_gradschool"
-"scores",6.914878630952,-14.5508288425842,-6.14158249007989,2.98866236537712
-"","(Intercept)","Party2","Party3","cons_dbi_autoloan_tradein"
-"scores",2.62943032026824,-14.5907799367558,-5.83867608996602,2.31034485471429
+"scores",7.05310950992606,-14.1902839305053,-6.43172501208658,2.89851701458788
 "","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy"
-"scores",1.16974926050766,-14.5859465613896,-5.82674746551214,3.19776087650802
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","cen00_gradschool"
-"scores",1.1684436825688,-14.5521999191599,-5.8548434786683,2.43260440092403,2.14590589687283
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","voted_08g_ineligible"
-"scores",0.745130015220977,-14.5622322180919,-6.03273212651541,3.46991400792756,2.47512189566336
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","voted_08g_ineligible","cen10_renters"
-"scores",0.268574565255949,-14.4483257596216,-6.04390198149598,3.53436387903052,2.30482953534656,1.15806400559662
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","voted_08g_ineligible","cen00_gradschool"
-"scores",0.796600546175718,-14.5312031870066,-6.0345826052822,2.7165134889398,2.24362936397276,1.86854945120767
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","voted_08g_ineligible","cen00_gradschool","Sex2"
-"scores",0.504827833255503,-14.480039361975,-5.94055198688096,2.72746511853205,2.29287179531352,1.88094485615447,1.02292856474959
-"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","voted_08g_ineligible","cen00_gradschool","cons_dbi_lifestyle_homeoffice"
-"scores",0.922482780493783,-14.4798343314889,-5.9167985761222,2.87210987357862,2.26209626969385,2.09276027349063,-1.09857181575891
-=======
-"scores",10.6232796775588,-15.1411041352215,-6.91637285940053
-"","(Intercept)","Party2","Party3","cons_dbi_autobuyer_used"
-"scores",6.8661028135696,-15.1435601304641,-6.48093456765245,-3.33190334751443
-"","(Intercept)","Party2","Party3","cons_dbi_finance_moneymarket"
-"scores",3.80628135511802,-15.1788353592483,-6.48076618554358,3.41895841643783
-"","(Intercept)","Party2","Party3","cons_dbi_finance_moneymarket","cen10_black"
-"scores",3.46283398569099,-15.1570213440142,-6.47761334978216,3.45596676415112,0.65240908592166
-"","(Intercept)","Party2","Party3","cons_dbi_finance_moneymarket","cen10_black","cat_age31-45","cat_age46-64","cat_age65+"
-"scores",3.61058241144193,-15.1930925599168,-6.55022047040878,3.58102269424372,0.701026454675524,-1.53702111928727,-1.34081680683123,-1.77698210909684
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+"scores",1.79070687066021,-14.2782785643797,-6.23492723180703,2.62523337629078
+"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","cen10_renters"
+"scores",1.00088522171784,-14.188162572689,-6.26883034361899,2.76859966008898,1.71574258852582
+"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","cen10_renters","cons_dbi_autoloan_bank"
+"scores",1.1367272665038,-14.1828569687026,-6.22635909840594,2.76651872507053,1.5480552090545,-0.622247290562147
+"","(Intercept)","Party2","Party3","cons_dbi_lifestyle_familyresturant_heavy","cen10_renters","cons_dbi_autoloan_bank","cons_dbi_autoloan_dealer"
+"scores",1.1116891677501,-14.1596699075118,-6.21629491223279,2.49276263883479,1.55744234259674,-0.794976613131343,0.501559502479497

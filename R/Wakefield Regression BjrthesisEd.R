@@ -52,7 +52,7 @@ Vandat <- readRDS('Vandat.RDS')
 
 
  
-maindf2 <-  readRDS('maindf2.rds')
+maindforig <-  readRDS('maindf2.rds')
 str(maindf2)
 
 ifilename <-  'imputation3.rds' #Name of file where imputation is stored:
@@ -86,17 +86,20 @@ maindf2 <- maindf2[, !colnames(maindf2) %in% varsToNotInclude]
 maindf2[, lapply(maindf2, is.character)==T] <- lapply(maindf2[, lapply(maindf2, is.character)==T], as.factor)
 head(maindf2)
 
+maindforig <- maindforig[, !colnames(maindforig) %in% varsToNotInclude]
+
 
 # #See what happens when we move the data shift to before controldf2 is defined
-possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
-maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
+# possAIVs <- c('SpecVotes', 'TenDummy','cat_age', 'Age','Sex','Party')
+# maindf2 <- maindf2[, c(which(colnames(maindf2) %in% possAIVs), which(!colnames(maindf2) %in% possAIVs))] #rearrange maindf2 s.t. columns of interest come first
 maindfin <- maindf2
+maindfinorig <- maindforig
 
 # set.seed(12345)
 
 # length of storage matrices and master iterator
 
-ulen <- 50
+ulen <- 3
 
 #Put together a matrix to store PCP values for test and training sets
 
@@ -117,7 +120,7 @@ for(u in 1:ulen){
 	# set.seed(i)
 	
 	maindf2 <- maindfin #If I don't do this, It'll shrink maindf2 until there's nothing left
-	
+	maindforig <- maindfinorig
 	# pull out a tenth of the data for control purposes
 	tenperc <-  createFolds(1:nrow(maindf2), k = 10)
 	
@@ -127,6 +130,10 @@ for(u in 1:ulen){
 	maincontdf2 <- maindf2[-c(tenperc$Fold04),]
 	
 	maindf2 <- maindf2[-c(tenperc$Fold06, tenperc$Fold04),]
+	
+	maindforigcont <- maindforig[tenperc$Fold04,]
+	maindffullorig <- maindforig[-tenperc$Fold04,]
+	maindforig <- maindforig[-c(tenperc$Fold06, tenperc$Fold04),]
 	
 	contrasts( maincontdf2$Party)
 	contrasts( truecont$Party)
@@ -383,26 +390,38 @@ for(u in 1:ulen){
 	
 	maincontdf2$sp08fac <- factor(maincontdf2$sp08)
 	truecont$sp08fac <- factor(truecont$sp08)
+	maindffullorig$sp08fac <- factor(maindffullorig$sp08)
+	maindforigcont$sp08fac <- factor(maindforigcont$sp08)
+	 
 	
-	adatest <-  boosting(sp08fac ~ ., data = maincontdf2[, !colnames(maincontdf2) %in% c('sp08', 'Voter.choice.of.sp08')], control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
+	maincontdf2ada <- maindffullorig[complete.cases(maindffullorig$sp08fac) , colnames(maindffullorig) %in% colnames(maincontdf2)]
+	# maincontdf2ada[sample(1:nrow(maincontdf2ada), 1), sample(1:nrow(maincontdf2ada), 1)] <- NA
+
+	adatest <-  boosting(sp08fac ~ ., data = maincontdf2ada[, !colnames(maincontdf2ada) %in% 'sp08'], control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
 	# print(summary(adatest))
-	
+
 	
 	sort( adatest$importance, T)
 	
 	#Generate predictions for ada on main and control data frames
-	adapredsmain <-  predict(adatest, newdata = maincontdf2)
-	adapredscont <-  predict(adatest, newdata = truecont)
+	adapredsmain <-  predict(adatest, newdata = maindffullorig)
+	adapredscont <-  predict(adatest, newdata = maindforigcont)
+	critergen(as.numeric(adapredscont$class), maindforigcont$sp08, fulltabl = T)
+	
+	adatestimp <-  boosting(sp08fac ~ ., data = maincontdf2, control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
+	# print(summary(adatest))
+	
+	adapredsmainimp <-  predict(adatestimp, newdata = maincontdf2)
+	adapredscontimp <-  predict(adatestimp, newdata = truecont)
+	
 	
 	# critergen(adapredsmain$class, maincontdf2$sp08)
 	# critergen(adapredscont$class, truecont$sp08)
 	maincontdf2$sp08fac <- NULL
 	truecont$sp08fac <- NULL #just in case
+	maindffullorig$sp08fac <- NULL
+	maindforigcont$sp08fac <- NULL
 	
-	# aday <- ydata
-	# # aday[sample(1:length(aday),10)] <- NA #add an NA
-	# adax <- xdata
-	# adax[sample(1:nrow(adax), size = 10), sample(1:ncol(adax), size = 10)] <- NA #add random set of missings to data
 	# # which( is.na(adax)) #make sure they're added. And they are
 	
 	
@@ -721,6 +740,9 @@ for(u in 1:ulen){
 	rfCritTrain <-  critergen(as.numeric(as.character(treetest$predicted)), maincontdf2$sp08, fulltabl = F)
 	
 	adaCritTrain <-  critergen(as.numeric(adapredsmain$class), maincontdf2$sp08, fulltabl = F)
+
+	adaCritTrainimp <-  critergen(as.numeric(adapredsmainimp$class), maincontdf2$sp08, fulltabl = F)
+
 	
 	# prop.table(table( ydata == predict(adatestwmissing, newdata = data.frame(adax)))) # ada with missings on training set
 	
@@ -739,6 +761,8 @@ for(u in 1:ulen){
 	
 	adaCritTest <-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = F)# ada with imputed data on test set
 	
+	adaCritTestimp <-  critergen(as.numeric(adapredsontimp$class), maincontdf2$sp08, fulltabl = F)
+	
 	# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
 	
 	PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain))
@@ -747,48 +771,7 @@ for(u in 1:ulen){
 	rownames(PCPdfTest) <- rownames(PCPdfTr)
 	# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 	
-	# if(u == 1){
-	# write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
-	# write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = F, row.names = F, col.names = T)
-	# # write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = F, row.names = F, col.names = F)
-	
-	# } else {
-	
-	# write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = T, row.names = F, col.names = F)
-	# write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv', sep = ',', append = T, row.names = F, col.names = F)
-	# # write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
-	
-	# }
-		# system('say Done!')
-	#So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
-	
-	# bestRegup <-  update( bestReg, . ~ . + Party)
-	
-	# critergen(predict(bestRegup, truecont$sp08, 'response'), controldf2$sp08)
-	
 
-	# for(i in 1:2){
-	# set.seed(Sys.time())
-	# masterregST <- {}
-
-brCritTest <- critergen(predict(bestReg, truecont, 'response'), truecont$sp08, fulltabl = F) #table of BeSiVa's Predictions on test set. 
-
-
-lassCritTest <-critergen(lassopredsCont, truecont$sp08, fulltabl = F) #table of Lasso's predictions on test set.
-
-netCritTest <- critergen(netpredsCont, truecont$sp08, fulltabl = F) #table of elastic net's predictions on test set
-
-rfCritTest <- critergen(as.numeric(as.character(forestpredsCont)), truecont$sp08, fulltabl = F) #random forest on test set predictions
-
-adaCritTest <-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = F)# ada with imputed data on test set
-
-# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
-
-PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain))
-PCPdfTest <- data.frame( Test = c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest))
-rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
-rownames(PCPdfTest) <- rownames(PCPdfTr)
-# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 
 if(u == 1){
 write.table(t(PCPdfTest), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTest.csv', sep = ',', append = F, row.names = F, col.names = T)
@@ -823,7 +806,7 @@ PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, ad
 system('say Done!')
 
 PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1"])
-PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1', ulen)))
+PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 unimp', ulen)))
 
 
 PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
