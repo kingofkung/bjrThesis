@@ -96,7 +96,7 @@ maindfin <- maindf2
 
 # length of storage matrices and master iterator
 
-ulen <- 100
+ulen <- 50
 
 #Put together a matrix to store PCP values for test and training sets
 
@@ -290,7 +290,7 @@ for(u in 1:ulen){
 
 	# nonzerocoefsfr <-  data.frame(coefs = coef(bestlasso)[which(coef(bestlasso) != 0)], odds.ratios = exp( coef(bestlasso)[which(coef(bestlasso) != 0)]), row.names = rownames(coef(bestlasso))[which(coef(bestlasso) != 0)])
 	# print(nonzerocoefsfr)
-	nrow(nonzerocoefsfr) - 1 #according to Zou Hastie, and Tibshirani (2007) The number of nonzero coefficients in the lasso is an unbiased estimator of the Effective Degrees of Freedom in the lasso. I wonder about the elastic net...
+	# nrow(nonzerocoefsfr) - 1 #according to Zou Hastie, and Tibshirani (2007) The number of nonzero coefficients in the lasso is an unbiased estimator of the Effective Degrees of Freedom in the lasso. I wonder about the elastic net...
 	
 	# mickey.test <- complete(mickey)[-mousesample,]
 	# mickey.test$sp08.2 <- mickey.test$sp08
@@ -829,10 +829,10 @@ PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net'
 PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
 
 testreg <- lm(PCCvals ~ PCCLabels)
-# summary(testreg)
+summary(testreg)
 anova(testreg)
 
-outreg(anova(testreg)) 
+outreg(testreg) 
 
 
 
