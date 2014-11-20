@@ -106,7 +106,7 @@ ulen <- 3
 PCCTeststore <- matrix(NA, nrow = ulen, ncol = 6)
 PCCTrainstore <- matrix(NA, nrow = ulen, ncol = 6)
 
-colnames(PCCTeststore) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+colnames(PCCTeststore) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1Unimp', 'Adaboost.M1Imp')
 colnames(PCCTrainstore)<- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
 
 #begin working on iterating data for purpose of presentation
@@ -805,17 +805,24 @@ PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, ad
 # } #end random iteration loop
 system('say Done!')
 
-PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1Unimp"], PCCTeststore[,"Adaboost.M1Imp"])
-PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 unimp', ulen), rep('Adaboost.M1Imp', ulen) ))
+PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1Imp"] , PCCTeststore[,"Adaboost.M1Unimp"])
+PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 Imputed', ulen)   , rep('Adaboost.M1 Unimputed', ulen) ))
 
 
 PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
 
-testreg <- lm(PCCvals ~ PCCLabels)
-summary(testreg)
+PCCDat <-  data.frame(PCCvals, PCCLabels)
+
+allimputed <- lm(PCCvals ~ PCCLabels, PCCDat[PCCLabels != 'Adaboost.M1 Unimputed' ,]  )
+summary(allimputed)
+
+unimputedada <- lm(PCCvals ~ PCCLabels, PCCDat  )
+summary(unimputedada)
+
+
 anova(testreg)
 
-outreg(testreg) 
+outreg(anova(testreg)) 
 
 
 
