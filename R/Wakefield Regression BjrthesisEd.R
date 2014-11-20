@@ -103,8 +103,8 @@ ulen <- 3
 
 #Put together a matrix to store PCP values for test and training sets
 
-PCCTeststore <- matrix(NA, nrow = ulen, ncol = 5)
-PCCTrainstore <- matrix(NA, nrow = ulen, ncol = 5)
+PCCTeststore <- matrix(NA, nrow = ulen, ncol = 6)
+PCCTrainstore <- matrix(NA, nrow = ulen, ncol = 6)
 
 colnames(PCCTeststore) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
 colnames(PCCTrainstore)<- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
@@ -408,7 +408,7 @@ for(u in 1:ulen){
 	adapredscont <-  predict(adatest, newdata = maindforigcont)
 	critergen(as.numeric(adapredscont$class), maindforigcont$sp08, fulltabl = T)
 	
-	adatestimp <-  boosting(sp08fac ~ ., data = maincontdf2, control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
+	adatestimp <-  boosting(sp08fac ~ ., data = maincontdf2[ ,!colnames(maincontdf2) %in% 'sp08'], control = rpart.control(minsplit = 20, cp = .0001)) #had to make certain that 'sp08' wasn't included in a modeling of sp08, but once I did, my god... It's still got a confusion matrix of 1 on the data
 	# print(summary(adatest))
 	
 	adapredsmainimp <-  predict(adatestimp, newdata = maincontdf2)
@@ -761,13 +761,13 @@ for(u in 1:ulen){
 	
 	adaCritTest <-critergen(as.numeric(adapredscont$class), truecont$sp08, fulltabl = F)# ada with imputed data on test set
 	
-	adaCritTestimp <-  critergen(as.numeric(adapredsontimp$class), maincontdf2$sp08, fulltabl = F)
+	adaCritTestimp <-  critergen(as.numeric(adapredscontimp$class), truecont$sp08, fulltabl = F)
 	
 	# prop.table(table( truecont$sp08 == predict(adatestwmissing, newdata = data.frame(newxdata)))) # ada with missings on test set
 	
-	PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain))
-	PCPdfTest <- data.frame( Test = c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest))
-	rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1')
+	PCPdfTr <-  data.frame(Training = c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain, adaCritTrainimp))
+	PCPdfTest <- data.frame( Test = c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest, adaCritTestimp))
+	rownames(PCPdfTr) <- c('BeSiVa', 'Lasso', 'Elastic Net', 'Random Forest', 'Adaboost.M1Unimp', 'Adaboost.M1Imp')
 	rownames(PCPdfTest) <- rownames(PCPdfTr)
 	# so it looks like it can beat lasso when it comes to predicting training data, but throw in test data, and it's actually worse than the lasso
 	
@@ -787,8 +787,8 @@ write.table(t(PCPdfTr), file = '/Users/bjr/GitHub/bjrThesis/R/PCPvalsTrain.csv',
 write.table(names(coef(bestRegST))[-1], file = '/Users/bjr/GitHub/bjrThesis/R/FinalIVs.csv', sep = ',', append = T, row.names = F, col.names = F)
 }
 
-PCCTeststore[u,] <- c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest)
-PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain)
+PCCTeststore[u,] <- c(brCritTest, lassCritTest, netCritTest, rfCritTest, adaCritTest, adaCritTestimp)
+PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, adaCritTrain, adaCritTrainimp)
 
 	# system('say Done!')
 #So it turns out that order totally matters. when it gets party, party may as well have been the only variable in the entire data set, judging from the way that the data jumps. However, it looks like 
@@ -805,8 +805,8 @@ PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, ad
 # } #end random iteration loop
 system('say Done!')
 
-PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1"])
-PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 unimp', ulen)))
+PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1Unimp"], PCCTeststore[,"Adaboost.M1Imp"])
+PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 unimp', ulen), rep('Adaboost.M1Imp', ulen) ))
 
 
 PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
