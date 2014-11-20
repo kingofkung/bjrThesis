@@ -99,7 +99,7 @@ maindfinorig <- maindforig
 
 # length of storage matrices and master iterator
 
-ulen <- 3
+ulen <- 50
 
 #Put together a matrix to store PCP values for test and training sets
 
