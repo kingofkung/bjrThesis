@@ -808,21 +808,40 @@ system('say Done!')
 PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1Imp"] , PCCTeststore[,"Adaboost.M1Unimp"])
 PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 Imputed', ulen)   , rep('Adaboost.M1 Unimputed', ulen) ))
 
+ hist(x = PCCTeststore[,1], freq = T)
+
+density(PCCTeststore[,'BeSiVa'])$y
+plot(x = density(PCCTeststore[,'BeSiVa'])$x, density(PCCTeststore[,'BeSiVa'])$y/max(density(PCCTeststore[,'BeSiVa'])$y), ylab = 'Probability Density', xlab = 'Percent Correctly Predicted', type = 'l', lty = 1, main = 'Density Plots of Percent Correctly Predicted for Tested Methods')
+
+lines(x = density(PCCTeststore[,'Lasso'])$x, y = density(PCCTeststore[,'Lasso'])$y / max(density(PCCTeststore[,'Lasso'])$y ) , lty =2 )
+lines(x = density(PCCTeststore[,'Elastic Net'])$x, y = density(PCCTeststore[,'Elastic Net'])$y / max(density(PCCTeststore[,'Elastic Net'])$y ) , lty = 3 )
+lines(x = density(PCCTeststore[,'Random Forest'])$x, y = density(PCCTeststore[,'Random Forest'])$y / max(density(PCCTeststore[,'Random Forest'])$y ) , lty = 4)
+lines(x = density(PCCTeststore[,'Adaboost.M1Imp'])$x, y = density(PCCTeststore[,'Adaboost.M1Imp'])$y / max(density(PCCTeststore[,'Adaboost.M1Imp'])$y ) , lty = 5)
+
+legendnames <- colnames(PCCTeststore)[1:5]
+legendnames[5] <- substr(legendnames[5], 1, 11)
+
+legend( x = .6, y = 1,, legend = legendnames, lty = 1:5)
+
 
 PCCLabels <- relevel(PCCLabels, ref = 'BeSiVa')
 
 PCCDat <-  data.frame(PCCvals, PCCLabels)
 
-allimputed <- lm(PCCvals ~ PCCLabels, PCCDat[PCCLabels != 'Adaboost.M1 Unimputed' ,]  )
-summary(allimputed)
+allimputednoint <- lm(PCCvals ~ PCCLabels-1, PCCDat[PCCLabels != 'Adaboost.M1 Unimputed' ,]  )
+summary(allimputednoint)
+anova(allimputed)
+
+outreg(allimputednoint, title = 'Title goes here')
+xtable(anova(allimputednoint), caption = 'Caption Here')
+xtable(summary(allimputednoint), caption = 'Caption Here')
+
 
 unimputedada <- lm(PCCvals ~ PCCLabels, PCCDat  )
 summary(unimputedada)
+anova(unimputedada)
 
-
-anova(testreg)
-
-outreg(anova(testreg)) 
+outreg(allimputednoint, title = 'title here') 
 
 
 
