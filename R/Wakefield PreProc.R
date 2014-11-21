@@ -27,6 +27,7 @@ library(rockchalk)
 library(caret) #loads ggplot2
 library(leaps)
 library(glmnet)
+library(ggplot2)
 
  
  
@@ -232,15 +233,17 @@ maindf$sp02.2Rec[which(maindf$sp02.2Rec %in% c("2 -No- there are no problems wit
 
 # }
 
-coltohist <- 'sp03'
+coltohist <- 'sp08'
 histvar <- maindf[, coltohist]
 questno <- as.numeric(substr(coltohist,3,4)) - 1
-histtitle <- paste('Histogram of question', questno) 
-xtitler <- paste('Response to question', questno)
+histtitle <- paste('Histogram of Final Identification Question Responses') 
+xtitler <- paste('Voter response')
 
 histdat <- as.numeric( strtrim(histvar[which(!histvar %in% c('', ' '))], 2))
-hist(histdat, main = histtitle, xlab = xtitler)
+kadie <- density(histdat)
 
+hist(histdat, main = histtitle, xlab = xtitler, freq = F, breaks = 12)
+# lines(kadie)
 # # 
 # hist(maindf$sp04)
 
