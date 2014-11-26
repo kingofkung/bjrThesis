@@ -1,0 +1,518 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+% latex table generated in R 3.1.1 by xtable 1.7-4 package
+\end_layout
+
+\begin_layout Plain Layout
+
+% Thu Nov 20 17:23:57 2014
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{table}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+caption{Anova results on the Means of each Method} 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+label{ regrlabl }
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{tabular}{lrrrrr}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+*
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) 
+\backslash
+
+\backslash
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+Methods & 5 & 130.66 & 26.13 & 23178.41* & 0.0000 
+\backslash
+
+\backslash
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+  Residuals & 245 & 0.28 & 0.00 &  &  
+\backslash
+
+\backslash
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+   
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+multicolumn{2}{l}{${*}  p 
+\backslash
+le 0.05$   }
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{tabular}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{table}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{table}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+caption{ A Comparison of Bootstrap Sample Means }
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+label{ regrlabl }
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+begin{tabular}{*{2}{l}}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+
+\backslash
+*
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+                & M1   
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                &Estimate
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                &(S.E.) 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+  BeSiVa   &  0.731* 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+               &(0.005)  
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  Adaboost.M1 Imputed   &  0.705* 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+               &(0.005)  
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  Elastic Net   &  0.732* 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+               &(0.005)  
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  Lasso   &  0.73* 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+               &(0.005)  
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  Random Forest   &  0.717* 
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+               &(0.005)  
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline 
+\end_layout
+
+\begin_layout Plain Layout
+
+ N                &250       
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ RMSE            &0.034   
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ $R^2$           &0.998   
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ adj $R^2$       &0.998   
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+hline
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+multicolumn{2}{l}{${*}  p 
+\backslash
+le 0.05$   }
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+end{tabular}
+\end_layout
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+end{table}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

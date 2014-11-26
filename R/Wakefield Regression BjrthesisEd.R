@@ -832,6 +832,9 @@ allimputednoint <- lm(PCCvals ~ PCCLabels-1, PCCDat[PCCLabels != 'Adaboost.M1 Un
 summary(allimputednoint)
 anova(allimputed)
 
+allimputedwint <- lm(PCCvals ~ PCCLabels, PCCDat[PCCLabels != 'Adaboost.M1 Unimputed' ,]  )
+summary(allimputedwint)
+
 outreg(allimputednoint, title = 'Title goes here')
 xtable(anova(allimputednoint), caption = 'Caption Here')
 xtable(summary(allimputednoint), caption = 'Caption Here')
@@ -842,6 +845,7 @@ summary(unimputedada)
 anova(unimputedada)
 
 outreg(allimputednoint, title = 'title here') 
+outreg(allimputedwint, title = 'title here') 
 
 
 
