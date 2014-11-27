@@ -848,5 +848,3 @@ outreg(allimputednoint, title = 'title here')
 outreg(allimputedwint, title = 'title here') 
 
 
-
-

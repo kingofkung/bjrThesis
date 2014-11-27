@@ -624,7 +624,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Adaboost.M1 Imputed   & -0.027* 
+  PCCLabelsAdaboost.M1 Imputed   & -0.027* 
 \backslash
 
 \backslash
@@ -642,7 +642,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Elastic Net   &  0.001 
+  PCCLabelsElastic Net   &  0.001 
 \backslash
 
 \backslash
@@ -660,7 +660,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Lasso   & -0.001 
+  PCCLabelsLasso   & -0.001 
 \backslash
 
 \backslash
@@ -678,7 +678,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Random Forest   & -0.014* 
+  PCCLabelsRandom Forest   & -0.014* 
 \backslash
 
 \backslash
