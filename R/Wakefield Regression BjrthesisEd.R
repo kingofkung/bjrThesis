@@ -805,6 +805,17 @@ PCCTrainstore[u,] <- c(brCritTrain, lassCritTrain, netCritTrain, rfCritTrain, ad
 # } #end random iteration loop
 system('say Done!')
 
+
+maincontdf2ada$sp08fac <- NULL
+treetest2 <-  cforest(sp08 ~., data = maincontdf2ada)
+sort( varimp(treetest2))
+predict(treetest2, newdata = maindforigcont, type = 'response') 
+
+
+treepreds2 <-  ifelse( predict(treetest2, newdata = maindforigcont, type = 'response') >=.5, 1,0)
+critergen(treepreds2, maindforigcont$sp08, fulltabl = T)
+
+
 PCCvals <-  c(PCCTeststore[,'BeSiVa'], PCCTeststore[,'Lasso'], PCCTeststore[,"Elastic Net"], PCCTeststore[,'Random Forest'], PCCTeststore[,"Adaboost.M1Imp"] , PCCTeststore[,"Adaboost.M1Unimp"])
 PCCLabels <- factor(c(rep('BeSiVa', ulen), rep('Lasso', ulen), rep('Elastic Net', ulen), rep('Random Forest', ulen), rep('Adaboost.M1 Imputed', ulen)   , rep('Adaboost.M1 Unimputed', ulen) ))
 
