@@ -342,7 +342,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Adaboost.M1 Imputed   &  0.705* 
+  Adaboost.M1    &  0.705* 
 \backslash
 
 \backslash
@@ -538,6 +538,13 @@ caption{ The treatment contrasts of Bootstrap Sample Means }
 
 \backslash
 label{ regrlabl }
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
 \end_layout
 
 \begin_layout Plain Layout

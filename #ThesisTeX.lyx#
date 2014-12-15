@@ -342,7 +342,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Adaboost.M1 Imputed   &  0.705* 
+  Adaboost.M1    &  0.705* 
 \backslash
 
 \backslash
@@ -542,6 +542,13 @@ label{ regrlabl }
 
 \begin_layout Plain Layout
 
+
+\backslash
+centering
+\end_layout
+
+\begin_layout Plain Layout
+
  
 \backslash
 begin{tabular}{*{2}{l}}
@@ -624,7 +631,7 @@ hline
 
 \begin_layout Plain Layout
 
-  Adaboost.M1 Imputed   & -0.027* 
+  Adaboost.M1    & -0.027* 
 \backslash
 
 \backslash
